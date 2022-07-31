@@ -1,0 +1,50 @@
+{
+  "name": "petri-net",
+  "scripts": {
+    "start": "node app.js",
+    "test": "node ./node_modules/mocha/bin/mocha --recursive test",
+    "apply": "node ./node_modules/webgme-engine/src/bin/apply.js",
+    "diff": "node ./node_modules/webgme-engine/src/bin/diff.js",
+    "export": "node ./node_modules/webgme-engine/src/bin/export.js",
+    "import": "node ./node_modules/webgme-engine/src/bin/import.js",
+    "merge": "node ./node_modules/webgme-engine/src/bin/merge.js",
+    "plugin": "node ./node_modules/webgme-engine/src/bin/run_plugin.js",
+    "pluginHook": "node ./node_modules/webgme-engine/src/bin/plugin_hook.js",
+    "users": "node ./node_modules/webgme-engine/src/bin/usermanager.js",
+    "clean_up": "node ./node_modules/webgme-engine/src/bin/clean_up.js"
+  },
+  "version": "1.0.0",
+  "peerDependencies": {
+    "webgme": "^2.23.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "webgme": "^2.23.0"
+  },
+  "description": "First, install the petri-net following: - [NodeJS](https://nodejs.org/en/) (LTS recommended) - [MongoDB](https://www.mongodb.com/)",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/austinjhunt/petrinet-designstudio.git"
+  },
+  "keywords": [
+    "petri",
+    "net",
+    "petrinet",
+    "design",
+    "studio",
+    "webgme",
+    "modeling",
+    "models",
+    "metamodeling"
+  ],
+  "author": "austinjhunt",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/austinjhunt/petrinet-designstudio/issues"
+  },
+  "homepage": "https://github.com/austinjhunt/petrinet-designstudio#readme"
+}

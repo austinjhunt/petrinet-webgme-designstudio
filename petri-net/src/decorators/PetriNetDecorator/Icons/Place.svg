@@ -1,0 +1,42 @@
+<% const MAX_TOKENS = 12 %>
+<% let currentMarking = getAttribute('currentMarking'); %>
+<% let diameter = getAttribute('diameter'); %>
+<% let radius = diameter / 2; %>
+<% let tokenColor = getAttribute('tokenColor') %>
+<% let xpos = radius, ypos = radius %>
+<% let coef = currentMarking > 3 ? 0.37 * diameter : 0.16 * diameter %>
+<% let shift = currentMarking > 3 ? 0.5 * diameter : 0.4 * diameter %>
+<% let scale = currentMarking > 3 ? (currentMarking < 7 ? 0.7 : 0.5) : 1 %>
+<% let angle = 0 %>
+<% let tokenCounter = currentMarking < MAX_TOKENS ? currentMarking : MAX_TOKENS %>
+<% let angleOffset = Math.PI * 2 / tokenCounter %>
+<svg width="<%= diameter %>" height="<%= diameter %>" xmlns="http://www.w3.org/2000/svg">
+    <g>
+        <circle class="fill-color border-color" cx="<%= radius %>" cy="<%= radius %>" r="<%= radius %>" stroke="#000" fill="#FFFFFF"/>
+      	<% if (currentMarking === 1) { %>
+      		<circle
+                    stroke="<%= tokenColor %>"
+                    fill="<%= tokenColor %>"
+                    r="<%= radius / 6 %>"
+                    cx="<%= xpos %>"
+                    cy="<%= ypos %>"
+                    />
+      	<% } else if (currentMarking <= 12) { %>
+      		<% for (let i = 0; i < currentMarking ; i ++) { %>
+      			<% xpos = parseInt(coef * Math.cos(angle) + shift); ypos = parseInt(coef * Math.sin(angle) + shift); %>
+      			<% angle += angleOffset %>
+      			<circle
+                    stroke="<%= tokenColor %>"
+                    fill="<%= tokenColor %>"
+                    r="<%= radius / 6 %>"
+                    cx="<%= xpos %>"
+                    cy="<%= ypos %>"
+                    />
+
+      		<% } %>
+      	<% } else { %>
+      	  <text text-anchor="middle" x="<%= radius %>" y="<%= radius %>" style="font-weight: bold; font-size: 1.6rem"><%= currentMarking %></text><%= currentMarking %>
+      	<% } %>
+
+    </g>
+</svg>
