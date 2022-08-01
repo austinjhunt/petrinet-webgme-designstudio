@@ -10,9 +10,19 @@
       "PetriNetDecorator": {
         "src": "src/decorators/PetriNetDecorator"
       }
+    },
+    "visualizers": {
+      "SimViz": {
+        "src": "panels/SimViz/SimVizPanel",
+        "title": "Simulator",
+        "panel": "src/visualizers/panels/SimViz",
+        "secondary": false,
+        "widget": "src/visualizers/widgets/SimViz"
+      }
     }
   },
   "dependencies": {
-    "decorators": {}
+    "decorators": {},
+    "visualizers": {}
   }
 }

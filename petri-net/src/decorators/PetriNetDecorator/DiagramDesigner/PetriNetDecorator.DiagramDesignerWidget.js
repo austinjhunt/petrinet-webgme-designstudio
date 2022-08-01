@@ -8,54 +8,61 @@
  */
 
 define([
-    'js/RegistryKeys',
-    'js/Constants',
-    'decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget',
-    'jquery',
-    'underscore'
-], function (
-    REGISTRY_KEYS,
-    CONSTANTS,
-    ModelDecoratorDiagramDesignerWidget) {
+  "js/RegistryKeys",
+  "js/Constants",
+  "decorators/ModelDecorator/DiagramDesigner/ModelDecorator.DiagramDesignerWidget",
+  "jquery",
+  "underscore",
+], function (REGISTRY_KEYS, CONSTANTS, ModelDecoratorDiagramDesignerWidget) {
+  "use strict";
 
-    'use strict';
+  var DECORATOR_ID = "PetriNetDecorator";
 
-    var DECORATOR_ID = 'PetriNetDecorator';
+  function PetriNetDecorator(options) {
+    var opts = _.extend({}, options);
 
-    function PetriNetDecorator(options) {
-        var opts = _.extend({}, options);
+    ModelDecoratorDiagramDesignerWidget.apply(this, [opts]);
 
-        ModelDecoratorDiagramDesignerWidget.apply(this, [opts]);
+    this.logger.debug("PetriNetDecorator ctor");
+  }
 
-        this.logger.debug('PetriNetDecorator ctor');
-    }
+  PetriNetDecorator.prototype = Object.create(
+    ModelDecoratorDiagramDesignerWidget.prototype
+  );
+  PetriNetDecorator.prototype.constructor = PetriNetDecorator;
+  PetriNetDecorator.prototype.DECORATORID = DECORATOR_ID;
 
-    PetriNetDecorator.prototype = Object.create(ModelDecoratorDiagramDesignerWidget.prototype);
-    PetriNetDecorator.prototype.constructor = PetriNetDecorator;
-    PetriNetDecorator.prototype.DECORATORID = DECORATOR_ID;
+  PetriNetDecorator.prototype.on_addTo = function () {
+    var client = this._control._client,
+      nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
 
-    PetriNetDecorator.prototype.on_addTo = function () {
-        var client = this._control._client,
-            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
+    this.logger.debug("This node was added to the canvas", nodeObj);
 
-        this.logger.debug('This node was added to the canvas', nodeObj);
+    // Call the base-class method..
+    ModelDecoratorDiagramDesignerWidget.prototype.on_addTo.apply(
+      this,
+      arguments
+    );
+  };
 
-        // Call the base-class method..
-        ModelDecoratorDiagramDesignerWidget.prototype.on_addTo.apply(this, arguments);
-    };
+  PetriNetDecorator.prototype.destroy = function () {
+    ModelDecoratorDiagramDesignerWidget.prototype.destroy.apply(
+      this,
+      arguments
+    );
+  };
 
-    PetriNetDecorator.prototype.destroy = function () {
-        ModelDecoratorDiagramDesignerWidget.prototype.destroy.apply(this, arguments);
-    };
+  PetriNetDecorator.prototype.update = function () {
+    var client = this._control._client,
+      nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
 
-    PetriNetDecorator.prototype.update = function () {
-        var client = this._control._client,
-            nodeObj = client.getNode(this._metaInfo[CONSTANTS.GME_ID]);
+    this.logger.debug(
+      "This node is on the canvas and received an update event",
+      nodeObj
+    );
 
-        this.logger.debug('This node is on the canvas and received an update event', nodeObj);
+    ModelDecoratorDiagramDesignerWidget.prototype.update.apply(this, arguments);
+  };
 
-        ModelDecoratorDiagramDesignerWidget.prototype.update.apply(this, arguments);
-    };
-
-    return PetriNetDecorator;
+  return PetriNetDecorator;
 });
