@@ -56,9 +56,26 @@ The below are the steps taken to set up a local WebGME development environment o
    1. `nvm install 18 && nvm use 18`
 2. Update NPM to latest version 8.15.1
    1. `npm install -g npm@8.15.1`
-3. Install `webgme-cli` as a global npm module
+3. Install [MongoDB](https://www.mongodb.com/)
+
+- This project will not work with new versions of Mongo. You need a version before 5.0 which deprecated the use of OP_QUERY command: find. Example: `brew install mongodb-community@4.4` Otherwise you will get error:
+
+```
+{
+  metadata: {
+    name: 'MongoError',
+    message: 'Unsupported OP_QUERY command: find. The client driver may require an upgrade. For more details see https://dochub.mongodb.org/core/legacy-opcode-removal',
+    ok: 0,
+    errmsg: 'Unsupported OP_QUERY command: find. The client driver may require an upgrade. For more details see https://dochub.mongodb.org/core/legacy-opcode-removal',
+    code: 352,
+    codeName: 'UnsupportedOpQueryCommand'
+  }
+}
+```
+
+4. Install `webgme-cli` as a global npm module
    1. `npm install -g webgme-cli`
-4. Created project with:
+5. Created project with:
    1. `webgme init petri-net` which outputs:
 
 ```
