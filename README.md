@@ -69,12 +69,68 @@ It is recommended to run 'npm init' from the within project to finish configurat
 5. Ran `npm init` from within the new `petri-net` folder as indicated above. Used mostly default values, except for GitHub repository, keywords, and author.
 6. Started project with `webgme start` from within `petri-net` folder.
 
-## Steps
+### Decoration
 
-### Decorators
+I didn't create my own custom decorator, and instead just used the SVG Decoration following [this tutorial on YouTube on Dynamic SVG Rendering in WebGME with EJS](https://www.youtube.com/watch?time_continue=1&v=l5m4CF4w8fE&feature=emb_logo).
 
-I want to use a custom decorator for this project, called something like `PetriNetDecoratorr` to enable dynamic SVG-based rendering for different objects based on attribute values. To do this, I followed [this Decorator documentation.](https://github.com/webgme/webgme/wiki/GME-Decorators) in combination with [this YouTube tutorial on Dynamic SVG Rendering in WebGME](https://www.youtube.com/watch?time_continue=3&v=l5m4CF4w8fE&feature=emb_logo) This tool already appends `Decorator` to the end of the provided name, so I used:
+Below is an outline of the specific decorations that were implemented to achieve the requirements.
+
+- [Places](petri-net/src/decorators/PetriNetDecorator/Icons/Place.svg) are circles containing <MARKING> tokens. SVG Decorator used with [EJS](https://ejs.co) to dynamically render up to 12 "token" discs (where the number of discs is the marking for the place) inside of a Place circle. When the marking of a place exceeds 12, it just prints a number inside the place circle. Token disc color can be customized with the `tokenColor` attribute of each place. Default is black.
+- [Transitions](petri-net/src/decorators/PetriNetDecorator/Icons/Transition.svg) are squares, created with SVG decorator. No EJS necessary since nothing needs to be dynamically rendered.
+- [Petri Nets](petri-net/src/decorators/PetriNetDecorator/Icons/PetriNet.svg) are decorated with a network icon supplemented with a textual description of the initial marking formatted as follows:
 
 ```
-webgme new decorator PetriNet --inherit
+M: placeName-marking otherPlaceName-otherMarking ... finalPlaceName-finalMarking
 ```
+
+This initial marking description took a bit of logic to build out using [EJS](https://ejs.co) as part of the SVG Decorator. The marking description on the backend uses in matrices and out matrices to first try to build an ordered string of the places if the petri net has a "start" Place (out flow only with no in flow); if there is no start place meeting that criteria, it starts from a random place. The string builder uses [breadth-first traversal](https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/) of the network and avoids infinite loops by skipping already-traversed places.
+
+### Simulation
+
+Next step: simulating behavior! Requirements of the simulator:
+
+- Should visualize the network similarly to the composition
+- Additionally, it should differentiate the transitions that are enabled
+- Firing should happen once the user clicks on an enabled transition
+- Markings should progress according to firings (no animation is required, but would be nice)
+- The visualizer should have a ‘reset’ button on its toolbar that switches the network back to the initial marking
+- The state of the simulation should not be reflected in the model
+- If your network reaches a deadlock (there is no enabled transition), some visual effect should notify the user (or an actual notification...)
+
+To do this, as documented [here](https://github.com/webgme/webgme/wiki/GME-Visualizers), I decided to use the `webgme new viz` command using the webgme CLI tool. When checking options with the `--help` flag, I got this response:
+
+```
+(base) huntaj-imac:petrinet-designstudio huntaj$ webgme new viz --help
+
+  Usage: webgme-new-viz [options] <visualizerID>
+
+  Options:
+
+    -h, --help               output usage information
+    --name <visualizerName>  Set the visualizer name. Default is the id
+    --secondary              Create visualizer not used for active node visualization
+```
+
+So, I need to create a primary visualizer for Simulation, but it looks like I'll need secondary visualizers for the additional UI pieces like the 'reset' button.
+
+To create a primary visualizer with the name `Simulator` and an ID of `SimViz`:
+
+```
+webgme new viz --name Simulator SimViz
+```
+
+I also had to manually update the WebGME Config file [config.webgme.js](petri-net/config/config.webgme.js) to include this line, otherwise the visualizer is completely ignored:
+
+```
+
+// visualizer descriptors
+config.visualization.visualizerDescriptors.push(
+  `${__dirname}/../src/visualizers/Visualizers.json`
+);
+```
+
+I then restarted the server with `CTRL+C` and `webgme start`. To verify the addition of the new visualizer, I went to the `PetriNet` meta type, opened the `Meta` tab, selected the `...` icon under `validVisualizers`, and checked for `SimViz` in the `Available` column:
+
+![new simviz visualizer available](img/availableSimViz.png)
+
+I added the `SimViz` visualizer directly underneath the `ModelEditor` visualizer in the Chosen column so it can appear as the second visualizer for all Petri Net model instances.
