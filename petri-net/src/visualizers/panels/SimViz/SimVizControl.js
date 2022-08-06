@@ -322,13 +322,13 @@ define([
   /* * * * * * * * Node Event Handling * * * * * * * */
   SimVizControl.prototype._eventCallback = function (events) {
     const self = this;
-    console.log(events);
+    // console.log(events);
     events.forEach((event) => {
       if (event.eid && event.eid === self._currentNodeId) {
         if (event.etype == "load" || event.etype == "update") {
           self._networkRootLoaded = true;
         } else {
-          self.clearSM();
+          self.clearPetriNet();
           return;
         }
       }
@@ -340,7 +340,7 @@ define([
       self._networkRootLoaded
     ) {
       // complete means we got all requested data and we do not have to wait for additional load cycles
-      self._initSM();
+      self._initPetriNet();
     }
   };
 
@@ -356,7 +356,8 @@ define([
   };
 
   /* * * * * * * * Machine manipulation functions * * * * * * * */
-  SimVizControl.prototype._initSM = function () {
+  SimVizControl.prototype._initPetriNet = function () {
+    console.log('initializing petri net')
     const self = this;
     //just for the ease of use, lets create a META dictionary
     const rawMETA = self._client.getAllMetaNodes();
@@ -366,26 +367,33 @@ define([
     });
     //now we collect all data we need for network visualization
     //we need our states (names, position, type), need the set of next state (with event names)
-    const smNode = self._client.getNode(self._currentNodeId);
-    const elementIds = smNode.getChildrenIds();
-    const sm = { init: null, states: {} };
+    const petriNetNode = self._client.getNode(self._currentNodeId);
+    const elementIds = petriNetNode.getChildrenIds();
+    const petriNet = { init: null, places: {}, transitions: {}};
     elementIds.forEach((elementId) => {
+      console.log(`elementId=${elementId}`)
       const node = self._client.getNode(elementId);
+      console.log('node from id = ')
+      console.log(node);
       // the simple way of checking type
-      if (node.isTypeOf(META["State"])) {
+      let isPlace = node.isTypeOf(META["Place"]);
+      if (isPlace) {
         //right now we only interested in states...
+        let position = node.getRegistry("position");
+        console.log(`position=${position}`);
+        let name = node.getAttribute('name')
+        console.log(`name=${name}`);
         const state = {
-          name: node.getAttribute("name"),
+          name: name,
           next: {},
-          position: node.getRegistry("position"),
-          isEnd: node.isTypeOf(META["End"]),
+          position: position, 
         };
         // one way to check meta-type in the client context - though it does not check for generalization types like State
         if (
           "Init" ===
           self._client.getNode(node.getMetaTypeId()).getAttribute("name")
         ) {
-          sm.init = elementId;
+          petriNet.init = elementId;
         }
 
         // this is in no way optimal, but shows clearly what we are looking for when we collect the data
@@ -399,15 +407,15 @@ define([
               nextNode.getPointerId("dst");
           }
         });
-        sm.states[elementId] = state;
+        petriNet.states[elementId] = state;
       }
     });
-    sm.setFireableEvents = this.setFireableEvents;
+    petriNet.setFireableEvents = this.setFireableEvents;
 
-    self._widget.initMachine(sm);
+    self._widget.initMachine(petriNet);
   };
 
-  SimVizControl.prototype.clearSM = function () {
+  SimVizControl.prototype.clearPetriNet = function () {
     const self = this;
     self._networkRootLoaded = false;
     self._widget.destroyMachine();
@@ -522,7 +530,7 @@ define([
       icon: "glyphicon glyphicon-question-sign",
       clickFn: function (/*data*/) {
         const context = self._client.getCurrentPluginContext(
-          "ReachCheck",
+          "PetriNetCategorizer",
           self._currentNodeId,
           []
         );

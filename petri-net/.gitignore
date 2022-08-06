@@ -4,6 +4,7 @@
 logs
 *.log
 
+mongo 
 # Runtime data
 pids
 *.pid

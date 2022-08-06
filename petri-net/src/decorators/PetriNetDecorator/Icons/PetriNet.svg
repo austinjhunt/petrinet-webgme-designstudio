@@ -21,7 +21,6 @@
         let getArcPointerNodeId = (arc, pointerName) => {
             // return id of node being pointed at where pointerName is either 'src' or 'dst'
         	let pointerId = arc.getPointerId(pointerName);
-            console.log(`pointerid: ${pointerId}`)
             return pointerId;
         };
 

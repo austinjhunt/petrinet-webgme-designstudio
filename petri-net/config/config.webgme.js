@@ -21,7 +21,7 @@ config.requirejsPaths = {
 };
 
 config.plugin.basePaths.push(__dirname + "/../src/plugins");
-
+config.plugin.allowServerExecution = true;
 config.seedProjects.basePaths.push("src/seeds");
 
 config.mongo.uri = "mongodb://127.0.0.1:27017/petri_net";
