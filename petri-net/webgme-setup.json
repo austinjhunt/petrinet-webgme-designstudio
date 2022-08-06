@@ -13,8 +13,8 @@
     },
     "visualizers": {
       "SimViz": {
-        "src": "panels/SimViz/SimVizPanel",
-        "title": "Simulator",
+        "src": "visualizers/panels/SimViz/SimVizPanel",
+        "title": "SimViz",
         "panel": "src/visualizers/panels/SimViz",
         "secondary": false,
         "widget": "src/visualizers/widgets/SimViz"

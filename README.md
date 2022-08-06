@@ -130,20 +130,40 @@ To do this, as documented [here](https://github.com/webgme/webgme/wiki/GME-Visua
 
 So, I need to create a primary visualizer for Simulation, but it looks like I'll need secondary visualizers for the additional UI pieces like the 'reset' button.
 
-To create a primary visualizer with the name `Simulator` and an ID of `SimViz`:
+To create a primary visualizer with an ID of `SimViz`:
 
 ```
-webgme new viz --name Simulator SimViz
+webgme new viz SimViz
 ```
 
-I also had to manually update the WebGME Config file [config.webgme.js](petri-net/config/config.webgme.js) to include this line, otherwise the visualizer is completely ignored:
+I then created [Visualizers.json](petri-net/src/visualizers/Visualizers.json) with the following content:
 
 ```
+[
+  {
+    "id": "SimViz",
+    "title": "SimViz",
+    "panel": "panels/SimViz/SimVizPanel",
+    "DEBUG_ONLY": false
+  }
+]
+```
 
+I also had to manually update the WebGME Config file [config.webgme.js](petri-net/config/config.webgme.js) to include the following, otherwise the visualizer is completely ignored:
+
+```
+// panels
+config.visualization.panelPaths.push(__dirname + "/../src/visualizers/panels");
 // visualizer descriptors
 config.visualization.visualizerDescriptors.push(
   `${__dirname}/../src/visualizers/Visualizers.json`
 );
+// Add requirejs paths
+config.requirejsPaths = {
+  panels: "./src/visualizers/panels",
+  widgets: "./src/visualizers/widgets",
+  statemachinejoint: "./src/common",
+};
 ```
 
 I then restarted the server with `CTRL+C` and `webgme start`. To verify the addition of the new visualizer, I went to the `PetriNet` meta type, opened the `Meta` tab, selected the `...` icon under `validVisualizers`, and checked for `SimViz` in the `Available` column:
