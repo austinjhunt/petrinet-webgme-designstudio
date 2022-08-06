@@ -102,7 +102,7 @@ M: placeName-marking otherPlaceName-otherMarking ... finalPlaceName-finalMarking
 
 This initial marking description took a bit of logic to build out using [EJS](https://ejs.co) as part of the SVG Decorator. The marking description on the backend uses in matrices and out matrices to first try to build an ordered string of the places if the petri net has a "start" Place (out flow only with no in flow); if there is no start place meeting that criteria, it starts from a random place. The string builder uses [breadth-first traversal](https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/) of the network and avoids infinite loops by skipping already-traversed places.
 
-### Simulation
+### Simulation Visualizer
 
 Next step: simulating behavior! Requirements of the simulator:
 
@@ -171,3 +171,43 @@ I then restarted the server with `CTRL+C` and `webgme start`. To verify the addi
 ![new simviz visualizer available](img/availableSimViz.png)
 
 I added the `SimViz` visualizer directly underneath the `ModelEditor` visualizer in the Chosen column so it can appear as the second visualizer for all Petri Net model instances.
+
+I used [Tamas Kecskes's StateMachineJoint example on GitHub](https://github.com/kecso/StateMachineJoint/blob/main/src/visualizers/panels/SimSM/SimSMControl.js) to provide a foundation for my [SimVizControl.js](petri-net/src/visualizers/panels/SimViz/SimVizControl.js) file, then proceeded to modify and customize based on my own domain; the example focuses on simulating State Machines specifically which are [different from Petri Nets](https://stackoverflow.com/questions/53980748/whats-the-difference-of-petri-nets-and-finite-state-machines).
+
+### PetriNetCategorizer Plugin
+
+I wanted to create a plugin for categorizing a given petri net into one or more of the following categories: `Workflow net`, `State machine`, `Free choice petri net`, and `Marked graph`. To do this, I first ran the following `webgme-cli` command:
+
+```
+webgme new plugin --language=Python --description="Categorizes petri nets based on criteria found through traversal" --plugin-name=PetriNetCategorizer PetriNetCategorizer
+```
+
+This interestingly produced all of the expected folders and files but it also threw this error:
+
+```
+(base) huntaj-imac:petri-net huntaj$ webgme new plugin --language=Python --description="Categorizes petri nets based on criteria found through traversal" --plugin-name=PetriNetCategorizer PetriNetCategorizer
+/Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/utils.js:200
+    array.forEach(function(key) {
+          ^
+
+TypeError: Cannot read properties of undefined (reading 'forEach')
+    at unique (/Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/utils.js:200:11)
+    at /Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/utils.js:221:20
+    at Array.map (<anonymous>)
+    at /Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/utils.js:219:35
+    at Array.forEach (<anonymous>)
+    at getWebGMEConfigContent (/Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/utils.js:218:38)
+    at Object.updateWebGMEConfig (/Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/utils.js:138:19)
+    at ComponentManager._register (/Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/ComponentManager.js:327:11)
+    at /Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/PluginManager.js:85:14
+    at /Users/huntaj/.nvm/versions/node/v18.0.0/lib/node_modules/webgme-cli/src/shim/PluginGenerator.js:54:9
+
+```
+
+Since it created the expected resources I didn't spend much time worrying about the JavaScript error.
+
+I then added the following line to [config.webgme.js](petri-net/config/config.webgme.js):
+
+```
+config.plugin.basePaths.push(__dirname + "/../src/plugins");
+```

@@ -19,10 +19,17 @@
         "secondary": false,
         "widget": "src/visualizers/widgets/SimViz"
       }
+    },
+    "plugins": {
+      "PetriNetCategorizer": {
+        "src": "src/plugins/PetriNetCategorizer",
+        "test": "test/plugins/PetriNetCategorizer"
+      }
     }
   },
   "dependencies": {
     "decorators": {},
-    "visualizers": {}
+    "visualizers": {},
+    "plugins": {}
   }
 }

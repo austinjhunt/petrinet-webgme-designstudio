@@ -20,6 +20,8 @@ config.requirejsPaths = {
   "petri-net": "./src/common",
 };
 
+config.plugin.basePaths.push(__dirname + "/../src/plugins");
+
 config.seedProjects.basePaths.push("src/seeds");
 
 config.mongo.uri = "mongodb://127.0.0.1:27017/petri_net";

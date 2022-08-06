@@ -1,0 +1,15 @@
+{
+  "id": "PetriNetCategorizer",
+  "name": "PetriNetCategorizer",
+  "version": "0.1.0",
+  "description": "Categorizes petri nets based on criteria found through traversal",
+  "icon": {
+    "class": "glyphicon glyphicon-cog",
+    "src": ""
+  },
+  "disableServerSideExecution": false,
+  "disableBrowserSideExecution": true,
+  "dependencies": [],
+  "writeAccessRequired": false,
+  "configStructure": []
+}
