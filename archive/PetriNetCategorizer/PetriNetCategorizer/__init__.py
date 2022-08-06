@@ -26,7 +26,8 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-class PetriNetCategorizer(PluginBase): 
+class PetriNetCategorizer(PluginBase):
+
     def get_paths_to_nodes(self, nodes=[]):
         """ return a dictionary containing all node
         paths as keys and the respective nodes as their values. """
@@ -188,35 +189,8 @@ class PetriNetCategorizer(PluginBase):
         one out transition and one in transition. """
         pass
 
-    def get_all_out_transitions_from_place(self, place_id):
-        """ use the output matrix to get all of the 
-        out transitions from this place id"""
-        return [tid for tid, val in \
-            self.output_matrix[place_id].items() if val]
-    
-    def get_all_in_transitions_to_place(self, place_id):
-        """ use the input matrix to get all 
-        of the in transitions to this place id """
-        return [tid for tid, val in \
-            self.input_matrix[place_id].items() if val]
 
-    def get_all_in_places_to_transition(self, transition_id):
-        """ use the output matrix to get all of the 
-        places with this transition as an out transition """
-        return [
-            p for p, transitions in self.output_matrix.items() if \
-                transitions[transition_id]
-        ]
-
-    def get_all_out_places_from_transition(self, transition_id): 
-        """ use the input matrix to get all of the places
-        with this transition as an in transition """
-        return [
-            p for p, transitions in self.input_matrix.items() if \
-                transitions[transition_id]
-        ]
-
-    def is_workflow(self):
+    def is_workflow(self, petri_net=None):
         """ return true if petri net is a workflow petri net,
         false otherwise.
         A petri net is a workflow net if it has exactly one
@@ -241,62 +215,33 @@ class PetriNetCategorizer(PluginBase):
                 if not any(transition_outflows[tif] for tif, i in enumerate(transition_outflows)):
                     places_no_outflow.append(place_id)
             return places_no_outflow
+
         # one place is technically a workflow.
         if len(self.places) == 1:
-            return True 
+            return True
 
         no_inflow_places, no_outflow_places = _get_places_with_no_inflow(), _get_places_with_no_outflow()
         if len(no_inflow_places) == 1 and len(no_outflow_places) == 1:
-            src, sink = no_inflow_places[0], no_outflow_places[0]
+            # both of these should be exactly 1 in a workflow
+            src,dst = no_inflow_places[0], no_outflow_places[0]
             # now need to make sure every x ∈ P ∪ T is on path from src to sink.
             # can create one list union of all places and transitions, and traverse from src to sink
             # and remove items from the union until reaching sink. if items still left, not a workflow.
             # if empty, workflow.
             all_places_and_transitions = self.get_place_ids().extend(self.get_transition_ids())
-            
-            # breadth first
-            queue = [src]
-            while queue:
-                node_id = queue.pop(0) 
-                all_places_and_transitions.remove(node_id)
-                node = self.core.load_by_path(
-                    self.active_node, 
-                    self.convert_path_to_relative(node_id)
-                    )
-                if self.is_place(node):
-                    out = self.get_all_out_transitions_from_place(
-                        place_id=node_id
-                        ) 
-                elif self.is_transition(node):
-                    out = self.get_all_out_places_from_transition(
-                        transition_id=node_id
-                    )
-                queue.extend(out)
-            if all_places_and_transitions:
-                logger.info(f'| T U P | = {len(all_places_and_transitions)}')
-                logger.info(
-                    f'Not all elements of that set are on path '
-                    f'from src {src} to sink {sink}'
-                    )
-                return False 
-            else: 
-                return True 
+            traversed = [src]
+            all_places_and_transitions.remove(src)
+            next_places = self.get_next_places_from_current_place(src)
+            while len(next_places) > 0:
+                place_id = next_places.pop(0)
+                if
+
         else:
-            # source count or sink count != exactly 1 
             return False
 
-    def convert_path_to_relative(self, node_path):
-        """ return relative path of node based on current active_node
-        by removing the active node path from beginning of node's path """
-        return node_path.replace(self.active_node['nodePath'], '')
-
-    def get_node_from_path(self, node_path):
-        """ given a node path / ID, return its name """
-        node = self.core.load_by_path(self.active_node, self.convert_path_to_relative(node_path))
-        return self.core.get_attribute(node, 'name')
 
 
-    def is_state_machine(self):
+    def is_state_machine(self, petri_net=None):
         """ return true if petri net is a state machine petri net,
         false otherwise.
         A petri net is a state machine if every transition has
@@ -308,7 +253,6 @@ class PetriNetCategorizer(PluginBase):
     def main(self):
         self.nodes = self.core.load_own_sub_tree(self.active_node)
         self.node_paths = self.get_paths_to_nodes(nodes=self.nodes)
-        
         core = self.core
         root_node = self.root_node
         active_node = self.active_node
@@ -324,18 +268,12 @@ class PetriNetCategorizer(PluginBase):
         self.output_matrix = self.get_output_matrix()
         META = self.META
         active_node = self.active_node # we assume that the active node is the petri net node
-        name = core.get_attribute(active_node, 'name')
-        logger.info(
-            f'ActiveNode at {core.get_path(active_node)}'
-            f'has name {name}'
-            )
-        core.set_attribute(active_node, 'name', 'newName')
-        commit_info = self.util.save(
-            root_node, 
-            self.commit_hash, 
-            'master', 
-            'Python plugin updated the model')
-        logger.info(f'committed :{commit_info}')
 
-        if self.is_workflow():
-            self.send_notification('WORKFLOW')
+        name = core.get_attribute(active_node, 'name')
+
+        logger.info('ActiveNode at "{0}" has name {1}'.format(core.get_path(active_node), name))
+
+        core.set_attribute(active_node, 'name', 'newName')
+
+        commit_info = self.util.save(root_node, self.commit_hash, 'master', 'Python plugin updated the model')
+        logger.info('committed :{0}'.format(commit_info))
