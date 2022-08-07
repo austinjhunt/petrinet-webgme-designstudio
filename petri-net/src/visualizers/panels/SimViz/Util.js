@@ -21,6 +21,67 @@ let getArcs = (client, metaName, elementIds) => {
   return arcs;
 };
 
+let _getFireableEvents = (client, petriNet) => {
+  /*
+    An event should be an arc. If an event/arc A is going to transition T, 
+    then that transition T must be enabled (defined above) in order 
+    to include A's id in fireable events. That is, 
+    fireable events are all of the placeToTransitionArcs whose destination
+    Transitions are enabled.
+    */
+  console.log("_getFireableEvents");
+  return petriNet.arcsPlaceToTransition.filter((p2tarc) => {
+    console.log(`placeToTransitionArc:`);
+    console.log(p2tarc);
+    let enabled = transitionIsEnabled(
+      client,
+      p2tarc.dst,
+      petriNet.outputMatrix
+    );
+    console.log(`transition enabled? -> ${enabled}`);
+    return enabled;
+  });
+};
+
+let _petriNetInDeadlock = (petriNet) => {
+  /* 
+    return true if there is no enabled transition, where a
+    transition is enabled if for all inplaces of the transition
+    the amount of tokens at the place is nonzero.
+
+    So return true if for all transitions t_i,
+      for all inplaces in_p of t_i,
+        in_p.currentMarking is <= 0 (really min is 0 but will use <=)
+  */
+  return Object.keys(petriNet.transitions).every((transId) => {
+    getInPlacesToTransition(transId, petriNet.outputMatrix).every(
+      (inPlaceId) => {
+        parseInt(petriNet.places[inPlaceId].currentMarking) <= 0;
+      }
+    );
+  });
+};
+
+let transitionIsEnabled = (client, transitionId, outputMatrix) => {
+  /* return true if transition is enabled, false otherwise
+  transition is ​enabled for all ​inplaces ​of the transition 
+  (that are connected to the transition via an 
+  incoming arc) the amount of tokens at the place is non zero
+  */
+  console.log(`checking if transition ${transitionId} enabled`);
+  return getInPlacesToTransition(transitionId, outputMatrix).every(
+    (inPlaceId) => {
+      let marking = parseInt(
+        client.getNode(inPlaceId).getAttribute("currentMarking")
+      );
+      console.log(
+        `inplaceId ${inPlaceId} to transitionId ${transitionId} marking = ${marking}`
+      );
+      return marking > 0;
+    }
+  );
+};
+
 let getPlacesIds = (client, elementIds) => {
   // get the ids of places from the children
   let places = [];

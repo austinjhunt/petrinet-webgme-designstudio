@@ -10,6 +10,8 @@ define([
     this._client = options.client;
     // Initialize core collections and variables
     this._widget = options.widget;
+    this._widget._client = options.client;
+
     this._currentNodeId = null;
     this._networkRootLoaded = false;
     this._fireableEvents = null;
@@ -125,11 +127,13 @@ define([
       arcsPlaceToTransition
     );
     let petriNet = {
+      /* functions to pass logic to widget */
+      deadlockActive: _petriNetInDeadlock,
+      getFireableEvents: _getFireableEvents,
+      /* end functions */
       startingPlace: startingPlaceId,
       places: {},
       transitions: {},
-      placeIds: placeIds,
-      transitionIds: transitionIds,
       inputMatrix: inputMatrix,
       outputMatrix: outputMatrix,
       arcsPlaceToTransition: arcsPlaceToTransition,
@@ -139,8 +143,9 @@ define([
       const node = self._client.getNode(elementId);
       if (node.isTypeOf(META["Place"])) {
         petriNet.places[elementId] = {
+          id: elementId,
           name: node.getAttribute("name"),
-          initialMarking: parseInt(node.getAttribute("currentMarking")),
+          currentMarking: parseInt(node.getAttribute("currentMarking")),
           nextPlaceIds: getNextPlacesFromCurrentPlace(
             elementId,
             arcsPlaceToTransition,
@@ -153,16 +158,18 @@ define([
         };
       } else if (node.isTypeOf(META["Transition"])) {
         petriNet.transitions[elementId] = {
+          id: elementId,
           name: node.getAttribute("name"),
           outPlaces: getOutPlacesFromTransition(elementId, inputMatrix),
           inPlaces: getInPlacesToTransition(elementId, outputMatrix),
           outArcs: getOutArcsFromTransition(elementId, arcsTransitionToPlace),
           position: node.getRegistry("position"),
+          enabled: transitionIsEnabled(self._client, elementId, outputMatrix),
         };
       }
     });
     petriNet.setFireableEvents = self.setFireableEvents;
-    console.log("initializing machine");
+    console.log("initializing machine from Control");
     self._widget.initMachine(petriNet);
   };
 
@@ -172,16 +179,17 @@ define([
   };
 
   SimVizControl.prototype.setFireableEvents = function (events) {
+    // events should be list of arcsPlaceToTransition
     const self = this;
     self._fireableEvents = events;
     if (events && events.length > 1) {
-      // we need to fill the dropdow button with options
+      // we need to fill the dropdown button with options
       self.$btnEventSelector.clear();
-      events.forEach((event) => {
+      events.forEach((arc) => {
         self.$btnEventSelector.addButton({
-          text: event,
-          title: "fire event: " + event,
-          data: { event: event },
+          text: arc.name,
+          title: "fire event: " + arc.name,
+          data: { event: arc },
           clickFn: (data) => {
             self._widget.fireEvent(data.event);
           },
@@ -189,6 +197,7 @@ define([
       });
     } else if (events && events.length === 0) {
       self._fireableEvents = null;
+      console.log("NO FIREABLE EVENTS");
     }
 
     self._displayToolbarItems();

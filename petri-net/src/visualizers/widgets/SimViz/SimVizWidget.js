@@ -34,17 +34,17 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       el: self._el,
       width: width,
       height: height,
-      model: self._jointSM,
+      model: self._jointPetriNet,
       interactive: false,
     });
     // add event calls to elements
     self._jointPaper.on("element:pointerdblclick", function (elementView) {
-      const currentElement = elementView.model;
-      // console.log(currentElement);
-      if (self._webgmeSM) {
-        // console.log(self._webgmeSM.id2state[currentElement.id]);
-        self._setCurrentState(self._webgmeSM.id2state[currentElement.id]);
-      }
+      //FIXME: current should be current marking, representative of all places in PN.
+      // const currentElement = elementView.model;
+      // if (self._webgmePetriNet) {
+      //   self._setCurrentState(self._webgmePetriNet.id2state[currentElement.id]);
+      // }
+      // set current marking maybe?
     });
 
     // Create a dummy header
@@ -103,7 +103,45 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     }
   };
 
-  SimVizWidget.prototype.initializePlaceVertices = function (petriNet, self) {
+  let PlaceCircle = function (place) {
+    let children = [];
+    for (var i = 0; i < place.currentMarking; i++) {
+      children.push({
+        tagName: "circle",
+        selector: `place-${place.id}-token-${i}`,
+        groupSelector: `place-${place.id}-tokens`,
+      });
+    }
+    let circle = joint.dia.Element.define("custom.Circle", {
+      position: place.position,
+      attrs: {
+        body: {
+          width: "calc(w)",
+          height: "calc(h)",
+        },
+      },
+      markup: [
+        {
+          tagName: "circle",
+          selector: "wrapper",
+          attributes: {
+            label: {
+              text: place.name,
+              fontWeight: "bold",
+            },
+            body: {
+              strokeWidth: 3,
+              cursor: "pointer",
+            },
+          },
+          children: children,
+        },
+      ],
+    });
+    return new circle();
+  };
+
+  SimVizWidget.prototype.initializePlaceVertices = function (self) {
     /* create a Circle vertex for each place using Joint JS; create an object
     mapping the joint vertex ids back to the place ids and set
     petriNet.id2place as that object.
@@ -111,37 +149,35 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     to respective joint vertex
     */
     console.log("initializing place vertices");
-    petriNet.id2place = {
+    self._webgmePetriNet.id2place = {
       /* map on-screen ids to place ids */
     };
-    Object.keys(petriNet.places).forEach((placeId) => {
-      let vertex = new joint.shapes.standard.Circle({
-        position: petriNet.places[placeId].position,
-        size: { width: 60, height: 60 },
-        attrs: {
-          label: {
-            text: petriNet.places[placeId].name,
-            fontWeight: "bold",
-            /* FIXME: need child circles inside up to 12 to indicate marking! */
-          },
-          body: {
-            strokeWidth: 3,
-            cursor: "pointer",
-          },
-        },
-      });
+    Object.keys(self._webgmePetriNet.places).forEach((placeId) => {
+      // let vertex = new joint.shapes.standard.Circle({
+      //   position: self._webgmePetriNet.places[placeId].position,
+      //   size: { width: 60, height: 60 },
+      //   attrs: {
+      //     label: {
+      //       text: self._webgmePetriNet.places[placeId].name,
+      //       fontWeight: "bold",
+      //       /* FIXME: need child circles inside up to 12 to indicate marking! */
+      //     },
+      //     body: {
+      //       strokeWidth: 3,
+      //       cursor: "pointer",
+      //     },
+      //   },
+      // });
+      let vertex = PlaceCircle(self._webgmePetriNet.places[placeId]);
+      console.log("vertex for place");
+      console.log(vertex);
       vertex.addTo(self._jointPetriNet);
-      petriNet.places[placeId].joint = vertex;
-      petriNet.id2place[vertex.id] = placeId;
+      self._webgmePetriNet.places[placeId].joint = vertex;
+      self._webgmePetriNet.id2place[vertex.id] = placeId;
     });
-    console.log("id2place: ");
-    console.log(petriNet.id2place);
   };
 
-  SimVizWidget.prototype.initializeTransitionVertices = function (
-    petriNet,
-    self
-  ) {
+  SimVizWidget.prototype.initializeTransitionVertices = function (self) {
     /* create a white square vertex for each transition using Joint JS; create an object
     mapping the joint vertex ids back to the transition ids and set
     petriNet.id2transition as that object.
@@ -149,16 +185,16 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     to respective joint vertex
     */
     console.log("initializing transition vertices");
-    petriNet.id2transition = {
+    self._webgmePetriNet.id2transition = {
       /* map on-screen ids to place ids */
     };
-    Object.keys(petriNet.transitions).forEach((transitionId) => {
+    Object.keys(self._webgmePetriNet.transitions).forEach((transitionId) => {
       let vertex = new joint.shapes.standard.Rectangle({
-        position: petriNet.transitions[transitionId].position,
+        position: self._webgmePetriNet.transitions[transitionId].position,
         size: { width: 60, height: 60 },
         attrs: {
           label: {
-            text: petriNet.transitions[transitionId].name,
+            text: self._webgmePetriNet.transitions[transitionId].name,
             fontWeight: "bold",
           },
           body: {
@@ -168,29 +204,29 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
         },
       });
       vertex.addTo(self._jointPetriNet);
-      petriNet.transitions[transitionId].joint = vertex;
-      petriNet.id2transition[vertex.id] = transitionId;
+      self._webgmePetriNet.transitions[transitionId].joint = vertex;
+      self._webgmePetriNet.id2transition[vertex.id] = transitionId;
     });
-    console.log("id2transition: ");
-    console.log(petriNet.id2transition);
   };
 
-  SimVizWidget.prototype.initializeArcs = function (petriNet, arcType, self) {
+  SimVizWidget.prototype.initializeArcs = function (self, arcType) {
     console.log("initializing arcs");
     let arcsArray =
       arcType === "ArcPlaceToTransition"
-        ? petriNet.arcsPlaceToTransition
-        : petriNet.arcsTransitionToPlace;
+        ? self._webgmePetriNet.arcsPlaceToTransition
+        : self._webgmePetriNet.arcsTransitionToPlace;
     arcsArray.forEach((arc) => {
       let src =
         arcType === "ArcPlaceToTransition"
-          ? petriNet.places[arc.src]
-          : petriNet.transitions[arc.src];
+          ? self._webgmePetriNet.places[arc.src]
+          : self._webgmePetriNet.transitions[arc.src];
       let dst =
         arcType === "ArcPlaceToTransition"
-          ? petriNet.transitions[arc.dst]
-          : petriNet.places[arc.dst];
+          ? self._webgmePetriNet.transitions[arc.dst]
+          : self._webgmePetriNet.places[arc.dst];
 
+      console.log("setting jointOutArcs for src:");
+      console.log(src);
       src.jointOutArcs = src.jointOutArcs || {};
       let link = new joint.shapes.standard.Link({
         // need to use the joint ids from the actual place and trans ids
@@ -225,8 +261,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       });
       link.addTo(self._jointPetriNet);
       src.jointOutArcs[arc.id] = link;
-      console.log("jointOutArcs: ");
-      console.log(src.jointOutArcs);
     });
   };
 
@@ -236,18 +270,12 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     console.log(petriNetDescriptor);
     const self = this;
     self._webgmePetriNet = petriNetDescriptor;
-    console.log("updating .current to startingPlace");
-    self._webgmePetriNet.current = self._webgmePetriNet.startingPlace;
-    console.log("clearing _jointPetriNet");
     self._jointPetriNet.clear();
-    const petriNet = self._webgmePetriNet;
-
-    SimVizWidget.prototype.initializePlaceVertices(petriNet, self);
-    SimVizWidget.prototype.initializeTransitionVertices(petriNet, self);
-    ["ArcsPlaceToTransition", "ArcsTransitionToPlace"].forEach((arcType) => {
-      SimVizWidget.prototype.initializeArcs(petriNet, arcType, self);
+    SimVizWidget.prototype.initializePlaceVertices(self);
+    SimVizWidget.prototype.initializeTransitionVertices(self);
+    ["ArcPlaceToTransition", "ArcTransitionToPlace"].forEach((arcType) => {
+      SimVizWidget.prototype.initializeArcs(self, arcType);
     });
-
     console.log("refreshing visualization");
     //now refresh the visualization
     self._jointPaper.updateViews();
@@ -260,18 +288,9 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
 
   SimVizWidget.prototype.destroyMachine = function () {};
 
-  SimVizWidget.prototype.deadlockReached = function () {
-    /* return true if there is no enabled transition, where a
-    transition is enabled if for all inplaces of the transition
-    the amount of tokens at the place is nonzero.
-
-    So return true if for all transitions t_i,
-      for all inplaces in_p of t_i,
-        in_p.marking is <= 0 (really min is 0 but will use <=)
-    */
-  };
-
   SimVizWidget.prototype.fireEvent = function (event) {
+    // event an arc to fire.
+
     /* The following definitions cover how the petri net
     progress from one marking to another:
     1) t∈T is ​enabled ​if∀p∈P |∃f(p→t)∈F M(p) > 0 - for all
@@ -284,50 +303,67 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     of token in all ​outplaces ​of the transition by one.
     */
     console.log("fire event");
-    const self = this;
-    // current is not defined by a single place but by the marking for the full
-    // FIXME
-    const current =
-      self._webgmePetriNet.places[self._webgmePetriNet.current] ||
-      self._webgmePetriNet.transitions[self._webgmePetriNet.current];
+    console.log(event);
 
-    // dont worry about a "current" node. instead fire ALL fireable events
-    console.log(current);
-    const link = current.jointOutArcs[event];
-    const linkView = link.findView(self._jointPaper);
-    linkView.sendToken(
-      joint.V("circle", { r: 10, fill: "black" }),
-      { duration: 500 },
-      function () {
-        self._webgmePetriNet.current = current.outArcs[event];
-        self._decorateMachine();
-      }
-    );
-    console;
-    if (SimVizWidget.prototype.deadlockReached()) {
+    const self = this;
+    if (this._webgmePetriNet.deadlockActive(self._webgmePetriNet)) {
+      this._client.sendMessageToPlugin(
+        "PetriNetClassifier",
+        "DEADLOCK_MSG",
+        "Deadlock has been reached"
+      );
+    } else {
+      // get the place from which this arc is coming.
+      let srcId = event.src;
+      console.log(`event src id = ${srcId}`);
+      let src = this._webgmePetriNet.places[srcId];
+      console.log("actual src");
+      console.log(src);
+      let link = src.jointOutArcs[event.id];
+      console.log("link: ");
+      console.log(link);
+      let linkView = link.findView(self._jointPaper);
+      console.log("linkView");
+      console.log(linkView);
+      linkView.sendToken(
+        joint.V("circle", { r: 10, fill: "black" }),
+        { duration: 500 },
+        function () {
+          // self._webgmePetriNet.current = current.outArcs[event];
+          self._decorateMachine();
+        }
+      );
     }
   };
 
   SimVizWidget.prototype.resetMachine = function () {
     this._webgmePetriNet.current = this._webgmePetriNet.startingPlace;
+    //FIXME: current should be current marking, representative of all places in PN.
     this._decorateMachine();
   };
 
   SimVizWidget.prototype._decorateMachine = function () {
     const petriNet = this._webgmePetriNet;
-    console.log("_decorateMachine:petriNet");
-    console.log(petriNet);
     Object.keys(petriNet.places).forEach((placeId) => {
       petriNet.places[placeId].joint.attr("body/stroke", "#333333");
     });
-    petriNet.places[petriNet.current].joint.attr("body/stroke", "blue");
+    // need to decorate the active places using their currentMarking values
+    Object.keys(petriNet.places).forEach((placeId) => {
+      petriNet.places[placeId].joint.attr(
+        "text/label",
+        petriNet.places[placeId].currentMarking
+      );
+    });
+    // fireable events SHOULD be an array of ArcsPlaceToTransition
     petriNet.setFireableEvents(
-      Object.keys(petriNet.places[petriNet.current].outArcs)
+      petriNet.getFireableEvents(this._client, petriNet)
     );
   };
 
   SimVizWidget.prototype._setCurrentState = function (newCurrent) {
+    //FIXME: current should be current marking, representative of all places in PN.
     this._webgmePetriNet.current = newCurrent;
+
     this._decorateMachine();
   };
 
