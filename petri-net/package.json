@@ -46,5 +46,8 @@
   "bugs": {
     "url": "https://github.com/austinjhunt/petrinet-designstudio/issues"
   },
-  "homepage": "https://github.com/austinjhunt/petrinet-designstudio#readme"
+  "homepage": "https://github.com/austinjhunt/petrinet-designstudio#readme",
+  "dependencies": {
+    "jointjs": "^3.5.5"
+  }
 }

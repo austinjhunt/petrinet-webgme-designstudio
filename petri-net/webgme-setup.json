@@ -21,9 +21,9 @@
       }
     },
     "plugins": {
-      "PetriNetCategorizer": {
-        "src": "src/plugins/PetriNetCategorizer",
-        "test": "test/plugins/PetriNetCategorizer"
+      "PetriNetClassifier": {
+        "src": "src/plugins/PetriNetClassifier",
+        "test": "test/plugins/PetriNetClassifier"
       }
     }
   },
