@@ -95,6 +95,7 @@ define([
   SimVizControl.prototype._initPetriNet = function () {
     const rawMETA = this._client.getAllMetaNodes();
     const META = {};
+    const self = this;
     rawMETA.forEach((node) => {
       META[node.getAttribute("name")] = node.getId(); //we just need the id...
     });
@@ -103,12 +104,12 @@ define([
     let placeIds = getPlacesIds(this._client, elementIds);
     let transitionIds = getTransitionsIds(this._client, elementIds);
     let arcsTransitionToPlace = getArcs(
-      this._client,
+      self._client,
       "ArcTransitionToPlace",
       elementIds
     );
     let arcsPlaceToTransition = getArcs(
-      this._client,
+      self._client,
       "ArcPlaceToTransition",
       elementIds
     );
@@ -124,8 +125,9 @@ define([
       arcsPlaceToTransition
     );
     let petriNet = {
-      startingPlaceId: startingPlaceId,
+      startingPlace: startingPlaceId,
       places: {},
+      transitions: {},
       placeIds: placeIds,
       transitionIds: transitionIds,
       inputMatrix: inputMatrix,
@@ -134,7 +136,7 @@ define([
       arcsTransitionToPlace: arcsTransitionToPlace,
     };
     elementIds.forEach((elementId) => {
-      const node = this._client.getNode(elementId);
+      const node = self._client.getNode(elementId);
       if (node.isTypeOf(META["Place"])) {
         petriNet.places[elementId] = {
           name: node.getAttribute("name"),
@@ -149,10 +151,19 @@ define([
           outArcs: getOutArcsFromPlace(elementId, arcsPlaceToTransition),
           position: node.getRegistry("position"),
         };
+      } else if (node.isTypeOf(META["Transition"])) {
+        petriNet.transitions[elementId] = {
+          name: node.getAttribute("name"),
+          outPlaces: getOutPlacesFromTransition(elementId, inputMatrix),
+          inPlaces: getInPlacesToTransition(elementId, outputMatrix),
+          outArcs: getOutArcsFromTransition(elementId, arcsTransitionToPlace),
+          position: node.getRegistry("position"),
+        };
       }
     });
-    petriNet.setFireableEvents = this.setFireableEvents;
-    this._widget.initMachine(petriNet);
+    petriNet.setFireableEvents = self.setFireableEvents;
+    console.log("initializing machine");
+    self._widget.initMachine(petriNet);
   };
 
   SimVizControl.prototype.clearPetriNet = function () {
@@ -161,25 +172,26 @@ define([
   };
 
   SimVizControl.prototype.setFireableEvents = function (events) {
-    this._fireableEvents = events;
+    const self = this;
+    self._fireableEvents = events;
     if (events && events.length > 1) {
       // we need to fill the dropdow button with options
-      this.$btnEventSelector.clear();
+      self.$btnEventSelector.clear();
       events.forEach((event) => {
-        this.$btnEventSelector.addButton({
+        self.$btnEventSelector.addButton({
           text: event,
           title: "fire event: " + event,
           data: { event: event },
           clickFn: (data) => {
-            this._widget.fireEvent(data.event);
+            self._widget.fireEvent(data.event);
           },
         });
       });
     } else if (events && events.length === 0) {
-      this._fireableEvents = null;
+      self._fireableEvents = null;
     }
 
-    this._displayToolbarItems();
+    self._displayToolbarItems();
   };
 
   /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
@@ -189,11 +201,12 @@ define([
   };
 
   SimVizControl.prototype._attachClientEventListeners = function () {
-    this._detachClientEventListeners();
+    const self = this;
+    self._detachClientEventListeners();
     WebGMEGlobal.State.on(
       "change:" + CONSTANTS.STATE_ACTIVE_OBJECT,
-      this._stateActiveObjectChanged,
-      this
+      self._stateActiveObjectChanged,
+      self
     );
   };
 
@@ -257,22 +270,23 @@ define([
 
   SimVizControl.prototype._initializeToolbar = function () {
     var toolBar = WebGMEGlobal.Toolbar;
-    this._toolbarItems = [];
-    this._toolbarItems.push(toolBar.addSeparator());
+    const self = this;
+    self._toolbarItems = [];
+    self._toolbarItems.push(toolBar.addSeparator());
 
     /************** Go to hierarchical parent button ****************/
-    this.$btnReachCheck = toolBar.addButton({
+    self.$btnReachCheck = toolBar.addButton({
       title: "Check state machine reachability properties",
       icon: "glyphicon glyphicon-question-sign",
       clickFn: function (/*data*/) {
-        const context = this._client.getCurrentPluginContext(
+        const context = self._client.getCurrentPluginContext(
           "PetriNetClassifier",
-          this._currentNodeId,
+          self._currentNodeId,
           []
         );
         // !!! it is important to fill out or pass an empty object as the plugin config otherwise we might get errors...
         context.pluginConfig = {};
-        this._client.runServerPlugin(
+        self._client.runServerPlugin(
           "PetriNetClassifier",
           context,
           function (err, result) {
@@ -283,35 +297,35 @@ define([
         );
       },
     });
-    this._toolbarItems.push(this.$btnReachCheck);
+    self._toolbarItems.push(self.$btnReachCheck);
 
-    this.$btnResetMachine = toolBar.addButton({
+    self.$btnResetMachine = toolBar.addButton({
       title: "Reset simulator",
       icon: "glyphicon glyphicon-fast-backward",
       clickFn: function (/*data*/) {
-        this._widget.resetMachine();
+        self._widget.resetMachine();
       },
     });
-    this._toolbarItems.push(this.$btnResetMachine);
+    self._toolbarItems.push(self.$btnResetMachine);
 
     // when there are multiple events to choose from we offer a selector
-    this.$btnEventSelector = toolBar.addDropDownButton({
+    self.$btnEventSelector = toolBar.addDropDownButton({
       text: "event",
     });
-    this._toolbarItems.push(this.$btnEventSelector);
-    this.$btnEventSelector.hide();
+    self._toolbarItems.push(self.$btnEventSelector);
+    self.$btnEventSelector.hide();
 
     // if there is only one event we just show a play button
-    this.$btnSingleEvent = toolBar.addButton({
+    self.$btnSingleEvent = toolBar.addButton({
       title: "Fire event",
       icon: "glyphicon glyphicon-play",
       clickFn: function (/*data*/) {
-        this._widget.fireEvent(this._fireableEvents[0]);
+        self._widget.fireEvent(self._fireableEvents[0]);
       },
     });
-    this._toolbarItems.push(this.$btnSingleEvent);
+    self._toolbarItems.push(self.$btnSingleEvent);
     /************** Dropdown for event progression *******************/
-    this._toolbarInitialized = true;
+    self._toolbarInitialized = true;
   };
 
   return SimVizControl;

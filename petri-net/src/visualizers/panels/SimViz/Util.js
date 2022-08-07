@@ -11,6 +11,8 @@ let getArcs = (client, metaName, elementIds) => {
     let node = client.getNode(id);
     if (getMetaName(client, node) === metaName) {
       arcs.push({
+        id: id,
+        name: node.getAttribute("name"),
         src: getArcPointerNodeId(node, "src"),
         dst: getArcPointerNodeId(node, "dst"),
       });
@@ -165,5 +167,8 @@ let getOutPlacesFromTransition = (transId, inputMatrix) => {
 
 let getOutArcsFromPlace = (placeId, arcsPlaceToTransition) => {
   return arcsPlaceToTransition.filter((arc) => arc.src === placeId);
+};
+let getOutArcsFromTransition = (transitionId, arcsTransitionToPlace) => {
+  return arcsTransitionToPlace.filter((arc) => arc.src === transitionId);
 };
 /*********** END UTILITY FUNCTIONS *************/
