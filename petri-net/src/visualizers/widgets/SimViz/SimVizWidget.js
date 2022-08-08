@@ -363,6 +363,7 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     });
 
     joint.shapes.pn.TransitionView = joint.dia.ElementView.extend({
+      /* Custom TransitionView to enable dynamic rendering based on enabled status */
       presentationAttributes: joint.dia.ElementView.addPresentationAttributes({
         enabled: ["ENABLED"],
       }),
@@ -374,54 +375,24 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
           ...args
         );
         if (this.hasFlag(flags, "ENABLED")) {
-          this.renderEnabledIndicator();
+          this.renderStatus();
           this.update();
           flags = this.removeFlag(flags, "ENABLED");
         }
         return flags;
       },
-
-      renderEnabledIndicator: function () {
-        const vTokens = this.vel.findOne(".tokens").empty();
-        let nums = {
-          1: "one",
-          2: "two",
-          3: "three",
-          4: "four",
-          5: "five",
-          6: "six",
-          7: "seven",
-          8: "eight",
-          9: "nine",
-          10: "ten",
-          11: "eleven",
-          12: "twelve",
-        };
-        Object.keys(nums).forEach((n) => {
-          vTokens.removeClass(nums[n]);
-        });
-        vTokens.removeClass("alot");
-
-        console.log(Array(2).fill(joint.V("circle")));
-
-        var tokens = this.model.get("enabled");
-        if (!tokens) return;
-
-        if (tokens <= 12) {
-          console.log(`tokens: ${tokens}`);
-          vTokens.addClass(nums[tokens]);
-          if (tokens == 1) {
-            vTokens.append(joint.V("circle"));
-          } else {
-            let circles = [];
-            for (var i = 0; i < tokens; i++) {
-              circles.push(joint.V("circle"));
-            }
-            vTokens.append(circles);
-          }
+      renderStatus: function () {
+        let ENABLED_CLASS = "enabled-pulsate";
+        let root = this.vel.findOne(".root");
+        let label = this.vel.findOne(".label");
+        let transitionName = this.model.get("name");
+        var enabled = this.model.get("enabled");
+        if (enabled) {
+          label.text(`ENABLED: ${transitionName}`).addClass("enabled");
+          root.addClass(ENABLED_CLASS);
         } else {
-          vTokens.addClass("alot");
-          vTokens.append(joint.V("text").text(`${tokens}`));
+          label.text(`DISABLED: ${transitionName}`).removeClass("enabled");
+          root.removeClass(ENABLED_CLASS);
         }
       },
     });
@@ -512,13 +483,14 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     }
   };
 
-  SimVizWidget.prototype.initializePlaceVertices = function (self) {
+  SimVizWidget.prototype.initializePlaceVertices = function () {
     /* create a Circle vertex for each place using Joint JS; create an object
     mapping the joint vertex ids back to the place ids and set
     petriNet.id2place as that object.
     also set each place.joint (petriNet.places[pid1,pid2,...].joint)
     to respective joint vertex
     */
+    let self = this;
     console.log("initializing place vertices");
     self._webgmePetriNet.id2place = {
       /* map on-screen ids to place ids */
@@ -551,13 +523,14 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     });
   };
 
-  SimVizWidget.prototype.initializeTransitionVertices = function (self) {
+  SimVizWidget.prototype.initializeTransitionVertices = function () {
     /* create a white square vertex for each transition using Joint JS; create an object
     mapping the joint vertex ids back to the transition ids and set
     petriNet.id2transition as that object.
     also set each transition.joint (petriNet.transitions[tid1,tid2,...].joint)
     to respective joint vertex
     */
+    let self = this;
     console.log("initializing transition vertices");
     self._webgmePetriNet.id2transition = {
       /* map on-screen ids to place ids */
@@ -565,16 +538,31 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     Object.keys(self._webgmePetriNet.transitions).forEach((transitionId) => {
       let transition = self._webgmePetriNet.transitions[transitionId];
       let vertex = new joint.shapes.pn.Transition({
+        name: transition.name,
         position: transition.position,
         size: { width: 50, height: 50 },
         attrs: {
           ".label": {
             text: transition.name,
-            fill: "black",
+            "text-anchor": "middle",
+            "ref-x": 0.5,
+            "ref-y": -20,
+            ref: ".root",
+            fill: "#000000",
+            fontSize: 18,
+            fontWeight: "bold",
+          },
+          ".label.enabled": {
+            fill: "green",
+            stroke: "green",
           },
           ".root": {
+            fill: "#777777",
+            stroke: "#777777",
+          },
+          ".root.enabled-pulsate": {
+            stroke: "green",
             fill: "white",
-            stroke: "black",
           },
         },
       });
@@ -583,8 +571,21 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       self._webgmePetriNet.id2transition[vertex.id] = transitionId;
     });
   };
+  SimVizWidget.prototype.updateTransitionEnabledStatuses = function () {
+    console.log("Now updating transition enabled statuses");
+    /* call this after full graph is created */
+    let self = this;
+    Object.keys(self._webgmePetriNet.transitions).forEach((tid) => {
+      console.log(`updating enabled status for transition with id ${tid}`);
+      let transitionJoint = self._webgmePetriNet.transitions[tid].joint;
+      let fireable = transitionIsFireable(self, transitionJoint);
+      console.log(`transition ${tid} fireable? -> ${fireable}`);
+      transitionJoint.set("enabled", fireable);
+    });
+  };
 
-  SimVizWidget.prototype.initializeArcs = function (self, arcType) {
+  SimVizWidget.prototype.initializeArcs = function (arcType) {
+    let self = this;
     let createJointLink = (a, b, name) => {
       return new joint.shapes.standard.Link({
         // need to use the joint ids from the actual place and trans ids
@@ -644,11 +645,12 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     const self = this;
     self._webgmePetriNet = petriNetDescriptor;
     self._jointPetriNet.clear();
-    SimVizWidget.prototype.initializePlaceVertices(self);
-    SimVizWidget.prototype.initializeTransitionVertices(self);
+    self.initializePlaceVertices();
+    self.initializeTransitionVertices();
     ["ArcPlaceToTransition", "ArcTransitionToPlace"].forEach((arcType) => {
-      SimVizWidget.prototype.initializeArcs(self, arcType);
+      self.initializeArcs(arcType);
     });
+    self.updateTransitionEnabledStatuses();
     //now refresh the visualization
     self._jointPaper.updateViews();
     self._decorateMachine();
@@ -656,7 +658,7 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
 
   SimVizWidget.prototype.destroyMachine = function () {};
 
-  let transitionIsFireable = (t, placesBefore = null) => {
+  let transitionIsFireable = (self, t, placesBefore = null) => {
     if (!placesBefore) {
       var inbound = self._jointPetriNet.getConnectedLinks(t, {
         inbound: true,
@@ -666,7 +668,10 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       });
     }
     var isFirable = true;
+    console.log("looping over placesBefore:");
     placesBefore.forEach(function (p) {
+      let tokens = p.get("tokens");
+      console.log(`p tokens = ${tokens}`);
       if (p.get("tokens") === 0) {
         isFirable = false;
       }
@@ -676,27 +681,9 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
 
   SimVizWidget.prototype.fireEvent = function (event) {
     // event is the string "FIRE"
+    let self = this;
 
     /* reference: https://github.com/clientIO/joint/blob/master/demo/petri%20nets/src/pn.js#L14 */
-
-    let updateFireableStatusIndicator = (t, self) => {
-      console.log(t);
-      // update styling of transition depending on whether it is fireable
-      if (transitionIsFireable(t)) {
-        t.attributes.attrs[".label"].fill = "purple";
-        t.attributes.attrs[
-          ".label"
-        ].text = `ENABLED-${t.attributes.attrs[".label"].text}`;
-        t.attributes.attrs[".root"].stroke = "purple";
-      } else {
-        t.attributes.attrs[".label"].fill = "black";
-        t.attributes.attrs[".label"].text = `${t.attributes.attrs[
-          ".label"
-        ].text.replace("ENABLED-", "")}`;
-        t.attributes.attrs[".root"].stroke = "black";
-      }
-      console.log(t);
-    };
 
     let fireTransition = (t, sec, self) => {
       var inbound = self._jointPetriNet.getConnectedLinks(t, { inbound: true });
@@ -710,7 +697,9 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
         return link.getTargetElement();
       });
 
-      if (transitionIsFireable(t, placesBefore)) {
+      if (transitionIsFireable(self, t, placesBefore)) {
+        let TOKEN_COLOR = "#ff0000";
+        let TOKEN_RADIUS = 10;
         placesBefore.forEach(function (p) {
           // Let the execution finish before adjusting the value of tokens. So that we can loop over all transitions
           // and call fireTransition() on the original number of tokens.
@@ -723,7 +712,10 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
           });
 
           links.forEach(function (l) {
-            var token = joint.V("circle", { r: 5, fill: "#feb662" });
+            var token = joint.V("circle", {
+              r: TOKEN_RADIUS,
+              fill: TOKEN_COLOR,
+            });
             l.findView(self._jointPaper).sendToken(token, sec * 1000);
           });
         });
@@ -734,7 +726,10 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
           });
 
           links.forEach(function (l) {
-            var token = joint.V("circle", { r: 5, fill: "#feb662" });
+            var token = joint.V("circle", {
+              r: TOKEN_RADIUS,
+              fill: TOKEN_COLOR,
+            });
             l.findView(self._jointPaper).sendToken(
               token,
               sec * 1000,
@@ -746,7 +741,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
         });
       }
     };
-    const self = this;
     if (this._webgmePetriNet.deadlockActive(self._webgmePetriNet)) {
       this._client.sendMessageToPlugin(
         "PetriNetClassifier",
@@ -758,20 +752,15 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       Object.keys(self._webgmePetriNet.transitions).forEach((tid) => {
         fireTransition(self._webgmePetriNet.transitions[tid].joint, 1, self);
       });
-      // update the decoration to indicate fireable/enabled transitions
-      Object.keys(self._webgmePetriNet.transitions).forEach((tid) => {
-        updateFireableStatusIndicator(
-          self._webgmePetriNet.transitions[tid].joint,
-          self
-        );
-      });
+      setTimeout(() => {
+        // update the decoration to indicate fireable/enabled transitions
+        self.updateTransitionEnabledStatuses();
+      }, 1500);
     }
   };
 
   SimVizWidget.prototype.resetMachine = function () {
-    this._webgmePetriNet.current = this._webgmePetriNet.startingPlace;
-    //FIXME: current should be current marking, representative of all places in PN.
-    this._decorateMachine();
+    this.initMachine(this._webgmePetriNet);
   };
 
   SimVizWidget.prototype._decorateMachine = function () {
@@ -787,14 +776,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       );
     });
   };
-
-  SimVizWidget.prototype._setCurrentState = function (newCurrent) {
-    //FIXME: current should be current marking, representative of all places in PN.
-    this._webgmePetriNet.current = newCurrent;
-
-    this._decorateMachine();
-  };
-
   /* * * * * * * * Visualizer event handlers * * * * * * * */
 
   SimVizWidget.prototype.onNodeClick = function (/*id*/) {
