@@ -13,12 +13,17 @@ define([
     this._widget._client = options.client;
 
     this._currentNodeId = null;
+    this._fireableEvents = null;
     this._networkRootLoaded = false;
     this._initWidgetEventHandlers();
+    // we need to fix the context of this function as it will be called from the widget directly
+    this.setFireableEvents = this.setFireableEvents.bind(this);
+    console.log("end control constructor");
     this._logger.debug("ctor finished");
   }
 
   SimVizControl.prototype._initWidgetEventHandlers = function () {
+    console.log("init widget event handlers");
     this._widget.onNodeClick = function (id) {
       // Change the current active object
       WebGMEGlobal.State.registerActiveObject(id);
@@ -163,13 +168,36 @@ define([
         };
       }
     });
-    console.log("initializing machine from Control");
+    petriNet.setFireableEvents = this.setFireableEvents;
     self._widget.initMachine(petriNet);
   };
 
   SimVizControl.prototype.clearPetriNet = function () {
     this._networkRootLoaded = false;
     this._widget.destroyMachine();
+  };
+
+  SimVizControl.prototype.setFireableEvents = function (enabledTransitions) {
+    this._fireableEvents = enabledTransitions;
+    console.log("setFireableEvents:enabledTransitions:");
+    console.log(enabledTransitions);
+    if (enabledTransitions && enabledTransitions.length >= 1) {
+      // fill dropdown button with options. only including enabled transitions
+      this.$btnEventSelector.clear();
+      enabledTransitions.forEach((transition) => {
+        this.$btnEventSelector.addButton({
+          text: `Fire enabled transition ${transition.name}`,
+          title: `Fire enabled transition ${transition.name}`,
+          data: { event: transition },
+          clickFn: (data) => {
+            this._widget.fireEvent(data.event);
+          },
+        });
+      });
+    } else if (enabledTransitions && enabledTransitions.length === 0) {
+      this._fireableEvents = null;
+    }
+    this._displayToolbarItems();
   };
 
   /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
@@ -216,6 +244,9 @@ define([
     if (this._toolbarInitialized === true) {
       for (var i = this._toolbarItems.length; i--; ) {
         this._toolbarItems[i].show();
+      }
+      if (this._fireableEvents === null || this._fireableEvents.length == 0) {
+        this.$btnEventSelector.hide();
       }
     } else {
       this._initializeToolbar();
@@ -277,14 +308,24 @@ define([
       },
     });
     self._toolbarItems.push(self.$btnResetMachine);
-    // play button for firing
+
+    // when there are multiple enabled transitions to choose
+    // from we offer a selector
+    this.$btnEventSelector = toolBar.addDropDownButton({
+      text: "Fire a specific enabled transition",
+      title: "Fire a specific enabled transition",
+    });
+    this._toolbarItems.push(this.$btnEventSelector);
+    this.$btnEventSelector.hide();
+
+    // play button for firing ALL enabled transitions
     self.$btnSingleEvent = toolBar.addButton({
-      text: "Aye matey! Fire the net!",
-      title: "FIRE",
+      text: "Fire all enabled transitions!",
+      title: "Fire all enabled transitions",
       data: { event: "FIRE" },
       icon: "glyphicon glyphicon-play",
       clickFn: (data) => {
-        self._widget.fireEvent(data.event);
+        self._widget.fireEvent(); // no args to fire all
       },
     });
     self._toolbarItems.push(self.$btnSingleEvent);
