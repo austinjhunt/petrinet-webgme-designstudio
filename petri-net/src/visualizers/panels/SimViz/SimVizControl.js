@@ -14,10 +14,7 @@ define([
 
     this._currentNodeId = null;
     this._networkRootLoaded = false;
-    this._fireableEvents = null;
     this._initWidgetEventHandlers();
-    // we need to fix the context of this function as it will be called from the widget directly
-    this.setFireableEvents = this.setFireableEvents.bind(this);
     this._logger.debug("ctor finished");
   }
 
@@ -168,7 +165,6 @@ define([
         };
       }
     });
-    petriNet.setFireableEvents = self.setFireableEvents;
     console.log("initializing machine from Control");
     self._widget.initMachine(petriNet);
   };
@@ -176,31 +172,6 @@ define([
   SimVizControl.prototype.clearPetriNet = function () {
     this._networkRootLoaded = false;
     this._widget.destroyMachine();
-  };
-
-  SimVizControl.prototype.setFireableEvents = function (events) {
-    // events should be list of arcsPlaceToTransition
-    const self = this;
-    self._fireableEvents = events;
-    if (events && events.length > 1) {
-      // we need to fill the dropdown button with options
-      self.$btnEventSelector.clear();
-      events.forEach((arc) => {
-        self.$btnEventSelector.addButton({
-          text: arc.name,
-          title: "fire event: " + arc.name,
-          data: { event: arc },
-          clickFn: (data) => {
-            self._widget.fireEvent(data.event);
-          },
-        });
-      });
-    } else if (events && events.length === 0) {
-      self._fireableEvents = null;
-      console.log("NO FIREABLE EVENTS");
-    }
-
-    self._displayToolbarItems();
   };
 
   /* * * * * * * * Visualizer life cycle callbacks * * * * * * * */
@@ -247,14 +218,6 @@ define([
     if (this._toolbarInitialized === true) {
       for (var i = this._toolbarItems.length; i--; ) {
         this._toolbarItems[i].show();
-      }
-      if (this._fireableEvents === null) {
-        this.$btnEventSelector.hide();
-        this.$btnSingleEvent.hide();
-      } else if (this._fireableEvents.length == 1) {
-        this.$btnEventSelector.hide();
-      } else {
-        this.$btnSingleEvent.hide();
       }
     } else {
       this._initializeToolbar();
@@ -316,20 +279,14 @@ define([
       },
     });
     self._toolbarItems.push(self.$btnResetMachine);
-
-    // when there are multiple events to choose from we offer a selector
-    self.$btnEventSelector = toolBar.addDropDownButton({
-      text: "event",
-    });
-    self._toolbarItems.push(self.$btnEventSelector);
-    self.$btnEventSelector.hide();
-
-    // if there is only one event we just show a play button
+    // play button for firing
     self.$btnSingleEvent = toolBar.addButton({
-      title: "Fire event",
+      text: "Aye matey! Fire the net!",
+      title: "FIRE",
+      data: { event: "FIRE" },
       icon: "glyphicon glyphicon-play",
-      clickFn: function (/*data*/) {
-        self._widget.fireEvent(self._fireableEvents[0]);
+      clickFn: (data) => {
+        self._widget.fireEvent(data.event);
       },
     });
     self._toolbarItems.push(self.$btnSingleEvent);

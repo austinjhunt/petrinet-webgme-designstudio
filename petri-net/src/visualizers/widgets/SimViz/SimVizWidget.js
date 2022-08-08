@@ -6,37 +6,380 @@
 
 define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
   "use strict";
-
   var WIDGET_CLASS = "sim-viz";
-
   function SimVizWidget(logger, container) {
     this._logger = logger.fork("Widget");
-
     this._el = container;
-
     this.nodes = {};
     this._initialize();
-
     this._logger.debug("ctor finished");
   }
 
   SimVizWidget.prototype._initialize = function () {
+    joint.shapes.pn.Place = joint.shapes.basic.Generic.define(
+      "pn.Place",
+      {
+        size: { width: 70, height: 70 },
+        attrs: {
+          ".root": {
+            r: 25,
+            fill: "#ffffff",
+            stroke: "#000000",
+            transform: "translate(25, 25)",
+          },
+          ".label": {
+            "text-anchor": "middle",
+            "ref-x": 0.5,
+            "ref-y": -20,
+            ref: ".root",
+            fill: "#000000",
+            "font-size": 16,
+          },
+          ".tokens > circle": {
+            fill: "#000000",
+            r: 2,
+          },
+          ".tokens.one > circle": { transform: "translate(25, 25)" },
+
+          ".tokens.two > circle:nth-child(1)": {
+            transform: "translate(19, 25)",
+          },
+          ".tokens.two > circle:nth-child(2)": {
+            transform: "translate(31, 25)",
+          },
+
+          ".tokens.three > circle:nth-child(1)": {
+            transform: "translate(18, 29)",
+          },
+          ".tokens.three > circle:nth-child(2)": {
+            transform: "translate(25, 19)",
+          },
+          ".tokens.three > circle:nth-child(3)": {
+            transform: "translate(32, 29)",
+          },
+
+          ".tokens.four > circle:nth-child(1)": {
+            transform: "translate(32, 18)",
+          },
+          ".tokens.four > circle:nth-child(2)": {
+            transform: "translate(18, 18)",
+          },
+          ".tokens.four > circle:nth-child(3)": {
+            transform: "translate(32, 32)",
+          },
+          ".tokens.four > circle:nth-child(4)": {
+            transform: "translate(18, 32)",
+          },
+
+          ".tokens.five > circle:nth-child(1)": {
+            transform: "translate(32, 18)",
+          },
+          ".tokens.five > circle:nth-child(2)": {
+            transform: "translate(18, 18)",
+          },
+          ".tokens.five > circle:nth-child(3)": {
+            transform: "translate(32, 32)",
+          },
+          ".tokens.five > circle:nth-child(4)": {
+            transform: "translate(18, 32)",
+          },
+          ".tokens.five > circle:nth-child(5)": {
+            transform: "translate(25, 25)",
+          },
+
+          ".tokens.six > circle:nth-child(1)": {
+            transform: "translate(18, 16)",
+          },
+          ".tokens.six > circle:nth-child(2)": {
+            transform: "translate(18, 25)",
+          },
+          ".tokens.six > circle:nth-child(3)": {
+            transform: "translate(18, 34)",
+          },
+          ".tokens.six > circle:nth-child(4)": {
+            transform: "translate(32, 16)",
+          },
+          ".tokens.six > circle:nth-child(5)": {
+            transform: "translate(32, 25)",
+          },
+          ".tokens.six > circle:nth-child(6)": {
+            transform: "translate(32, 34)",
+          },
+
+          ".tokens.seven > circle:nth-child(1)": {
+            transform: "translate(16, 16)",
+          },
+          ".tokens.seven > circle:nth-child(2)": {
+            transform: "translate(16, 25)",
+          },
+          ".tokens.seven > circle:nth-child(3)": {
+            transform: "translate(16, 34)",
+          },
+          ".tokens.seven > circle:nth-child(4)": {
+            transform: "translate(34, 16)",
+          },
+          ".tokens.seven > circle:nth-child(5)": {
+            transform: "translate(34, 25)",
+          },
+          ".tokens.seven > circle:nth-child(6)": {
+            transform: "translate(34, 34)",
+          },
+          ".tokens.seven > circle:nth-child(7)": {
+            transform: "translate(25,25)",
+          },
+
+          ".tokens.eight > circle:nth-child(1)": {
+            transform: "translate(16, 16)",
+          },
+          ".tokens.eight > circle:nth-child(2)": {
+            transform: "translate(16, 25)",
+          },
+          ".tokens.eight > circle:nth-child(3)": {
+            transform: "translate(16, 34)",
+          },
+          ".tokens.eight > circle:nth-child(4)": {
+            transform: "translate(34, 16)",
+          },
+          ".tokens.eight > circle:nth-child(5)": {
+            transform: "translate(34, 25)",
+          },
+          ".tokens.eight > circle:nth-child(6)": {
+            transform: "translate(34, 34)",
+          },
+          ".tokens.eight > circle:nth-child(7)": {
+            transform: "translate(25,34)",
+          },
+          ".tokens.eight > circle:nth-child(8)": {
+            transform: "translate(25,16)",
+          },
+
+          ".tokens.nine > circle:nth-child(1)": {
+            transform: "translate(16, 16)",
+          },
+          ".tokens.nine > circle:nth-child(2)": {
+            transform: "translate(16, 25)",
+          },
+          ".tokens.nine > circle:nth-child(3)": {
+            transform: "translate(16, 34)",
+          },
+          ".tokens.nine > circle:nth-child(4)": {
+            transform: "translate(25, 16)",
+          },
+          ".tokens.nine > circle:nth-child(5)": {
+            transform: "translate(25, 25)",
+          },
+          ".tokens.nine > circle:nth-child(6)": {
+            transform: "translate(25, 34)",
+          },
+          ".tokens.nine > circle:nth-child(7)": {
+            transform: "translate(34, 16)",
+          },
+          ".tokens.nine > circle:nth-child(8)": {
+            transform: "translate(34, 25)",
+          },
+          ".tokens.nine > circle:nth-child(9)": {
+            transform: "translate(34, 34)",
+          },
+
+          ".tokens.ten > circle:nth-child(1)": {
+            transform: "translate(16, 15)",
+          },
+          ".tokens.ten > circle:nth-child(2)": {
+            transform: "translate(16, 24)",
+          },
+          ".tokens.ten > circle:nth-child(3)": {
+            transform: "translate(16, 33)",
+          },
+          ".tokens.ten > circle:nth-child(4)": {
+            transform: "translate(25, 15)",
+          },
+          ".tokens.ten > circle:nth-child(5)": {
+            transform: "translate(25, 24)",
+          },
+          ".tokens.ten > circle:nth-child(6)": {
+            transform: "translate(25, 33)",
+          },
+          ".tokens.ten > circle:nth-child(7)": {
+            transform: "translate(34, 15)",
+          },
+          ".tokens.ten > circle:nth-child(8)": {
+            transform: "translate(34, 24)",
+          },
+          ".tokens.ten > circle:nth-child(9)": {
+            transform: "translate(34, 33)",
+          },
+          ".tokens.ten > circle:nth-child(10)": {
+            transform: "translate(25, 41)",
+          },
+
+          ".tokens.eleven > circle:nth-child(1)": {
+            transform: "translate(16, 15)",
+          },
+          ".tokens.eleven > circle:nth-child(2)": {
+            transform: "translate(16, 24)",
+          },
+          ".tokens.eleven > circle:nth-child(3)": {
+            transform: "translate(16, 33)",
+          },
+          ".tokens.eleven > circle:nth-child(4)": {
+            transform: "translate(25, 15)",
+          },
+          ".tokens.eleven > circle:nth-child(5)": {
+            transform: "translate(25, 24)",
+          },
+          ".tokens.eleven > circle:nth-child(6)": {
+            transform: "translate(25, 33)",
+          },
+          ".tokens.eleven > circle:nth-child(7)": {
+            transform: "translate(34, 15)",
+          },
+          ".tokens.eleven > circle:nth-child(8)": {
+            transform: "translate(34, 24)",
+          },
+          ".tokens.eleven > circle:nth-child(9)": {
+            transform: "translate(34, 33)",
+          },
+          ".tokens.eleven > circle:nth-child(10)": {
+            transform: "translate(25, 41)",
+          },
+          ".tokens.eleven > circle:nth-child(11)": {
+            transform: "translate(25, 6)",
+          },
+
+          ".tokens.twelve > circle:nth-child(1)": {
+            transform: "translate(10, 16)",
+          },
+          ".tokens.twelve > circle:nth-child(2)": {
+            transform: "translate(10, 25)",
+          },
+          ".tokens.twelve > circle:nth-child(3)": {
+            transform: "translate(10, 34)",
+          },
+          ".tokens.twelve > circle:nth-child(4)": {
+            transform: "translate(20, 16)",
+          },
+          ".tokens.twelve > circle:nth-child(5)": {
+            transform: "translate(20, 25)",
+          },
+          ".tokens.twelve > circle:nth-child(6)": {
+            transform: "translate(20, 34)",
+          },
+          ".tokens.twelve > circle:nth-child(7)": {
+            transform: "translate(30, 16)",
+          },
+          ".tokens.twelve > circle:nth-child(8)": {
+            transform: "translate(30, 25)",
+          },
+          ".tokens.twelve > circle:nth-child(9)": {
+            transform: "translate(30, 34)",
+          },
+          ".tokens.twelve > circle:nth-child(10)": {
+            transform: "translate(40, 16)",
+          },
+          ".tokens.twelve > circle:nth-child(11)": {
+            transform: "translate(40, 25)",
+          },
+          ".tokens.twelve > circle:nth-child(12)": {
+            transform: "translate(40, 34)",
+          },
+
+          ".tokens.alot > text": {
+            transform: "translate(25, 18)",
+            "text-anchor": "middle",
+            fill: "#000000",
+          },
+        },
+      },
+      {
+        markup:
+          '<g class="rotatable"><g class="scalable"><circle class="root"/><g class="tokens" /></g><text class="label"/></g>',
+      }
+    );
+
+    joint.shapes.pn.PlaceView = joint.dia.ElementView.extend({
+      presentationAttributes: joint.dia.ElementView.addPresentationAttributes({
+        tokens: ["TOKENS"],
+      }),
+      initFlag: joint.dia.ElementView.prototype.initFlag.concat(["TOKENS"]),
+
+      confirmUpdate: function (...args) {
+        let flags = joint.dia.ElementView.prototype.confirmUpdate.call(
+          this,
+          ...args
+        );
+        if (this.hasFlag(flags, "TOKENS")) {
+          this.renderTokens();
+          this.update();
+          flags = this.removeFlag(flags, "TOKENS");
+        }
+        return flags;
+      },
+
+      renderTokens: function () {
+        const vTokens = this.vel.findOne(".tokens").empty();
+        let nums = {
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine",
+          10: "ten",
+          11: "eleven",
+          12: "twelve",
+        };
+        Object.keys(nums).forEach((n) => {
+          vTokens.removeClass(nums[n]);
+        });
+        vTokens.removeClass("alot");
+
+        console.log(Array(2).fill(joint.V("circle")));
+
+        var tokens = this.model.get("tokens");
+        if (!tokens) return;
+
+        if (tokens <= 12) {
+          console.log(`tokens: ${tokens}`);
+          vTokens.addClass(nums[tokens]);
+          if (tokens == 1) {
+            vTokens.append(joint.V("circle"));
+          } else {
+            let circles = [];
+            for (var i = 0; i < tokens; i++) {
+              circles.push(joint.V("circle"));
+            }
+            vTokens.append(circles);
+          }
+        } else {
+          vTokens.addClass("alot");
+          vTokens.append(joint.V("text").text(`${tokens}`));
+        }
+      },
+    });
+
     var width = this._el.width(),
       height = this._el.height(),
       self = this;
 
     // set widget class
     self._el.addClass(WIDGET_CLASS);
-
+    const namespace = joint.shapes;
     // initialize Joint JS petrinet
-    self._jointPetriNet = new joint.dia.Graph();
+    self._jointPetriNet = new joint.dia.Graph({}, { cellNamespace: namespace });
     self._jointPaper = new joint.dia.Paper({
       el: self._el,
       width: width,
       height: height,
+      gridSize: 10,
       model: self._jointPetriNet,
-      interactive: false,
+      defaultAnchor: { name: "perpendicular" },
+      defaultConnectionPoint: { name: "boundary" },
+      cellViewNamespace: namespace,
     });
+
     // add event calls to elements
     self._jointPaper.on("element:pointerdblclick", function (elementView) {
       //FIXME: current should be current marking, representative of all places in PN.
@@ -103,44 +446,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     }
   };
 
-  let PlaceCircle = function (place) {
-    let children = [];
-    for (var i = 0; i < place.currentMarking; i++) {
-      children.push({
-        tagName: "circle",
-        selector: `place-${place.id}-token-${i}`,
-        groupSelector: `place-${place.id}-tokens`,
-      });
-    }
-    let circle = joint.dia.Element.define("custom.Circle", {
-      position: place.position,
-      attrs: {
-        body: {
-          width: "calc(w)",
-          height: "calc(h)",
-        },
-      },
-      markup: [
-        {
-          tagName: "circle",
-          selector: "wrapper",
-          attributes: {
-            label: {
-              text: place.name,
-              fontWeight: "bold",
-            },
-            body: {
-              strokeWidth: 3,
-              cursor: "pointer",
-            },
-          },
-          children: children,
-        },
-      ],
-    });
-    return new circle();
-  };
-
   SimVizWidget.prototype.initializePlaceVertices = function (self) {
     /* create a Circle vertex for each place using Joint JS; create an object
     mapping the joint vertex ids back to the place ids and set
@@ -153,25 +458,28 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       /* map on-screen ids to place ids */
     };
     Object.keys(self._webgmePetriNet.places).forEach((placeId) => {
-      // let vertex = new joint.shapes.standard.Circle({
-      //   position: self._webgmePetriNet.places[placeId].position,
-      //   size: { width: 60, height: 60 },
-      //   attrs: {
-      //     label: {
-      //       text: self._webgmePetriNet.places[placeId].name,
-      //       fontWeight: "bold",
-      //       /* FIXME: need child circles inside up to 12 to indicate marking! */
-      //     },
-      //     body: {
-      //       strokeWidth: 3,
-      //       cursor: "pointer",
-      //     },
-      //   },
-      // });
-      let vertex = PlaceCircle(self._webgmePetriNet.places[placeId]);
-      console.log("vertex for place");
+      let place = self._webgmePetriNet.places[placeId];
+      console.log(`adding place vertex with tokens = ${place.currentMarking}`);
+      let vertex = new joint.shapes.pn.Place({
+        position: place.position,
+        size: { width: 80, height: 80 },
+        attrs: {
+          ".label": {
+            text: self._webgmePetriNet.places[placeId].name,
+            fill: "black",
+          },
+          ".root": {
+            stroke: "black",
+            strokeWidth: 3,
+          },
+          ".tokens > circle": {
+            fill: "#7a7e9b",
+          },
+        },
+        tokens: place.currentMarking,
+      });
       console.log(vertex);
-      vertex.addTo(self._jointPetriNet);
+      self._jointPetriNet.addCell([vertex]);
       self._webgmePetriNet.places[placeId].joint = vertex;
       self._webgmePetriNet.id2place[vertex.id] = placeId;
     });
@@ -189,17 +497,18 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       /* map on-screen ids to place ids */
     };
     Object.keys(self._webgmePetriNet.transitions).forEach((transitionId) => {
-      let vertex = new joint.shapes.standard.Rectangle({
-        position: self._webgmePetriNet.transitions[transitionId].position,
-        size: { width: 60, height: 60 },
+      let transition = self._webgmePetriNet.transitions[transitionId];
+      let vertex = new joint.shapes.pn.Transition({
+        position: transition.position,
+        size: { width: 50, height: 50 },
         attrs: {
-          label: {
-            text: self._webgmePetriNet.transitions[transitionId].name,
-            fontWeight: "bold",
+          ".label": {
+            text: transition.name,
+            fill: "black",
           },
-          body: {
-            strokeWidth: 3,
-            cursor: "pointer",
+          ".root": {
+            fill: "white",
+            stroke: "black",
           },
         },
       });
@@ -210,28 +519,11 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
   };
 
   SimVizWidget.prototype.initializeArcs = function (self, arcType) {
-    console.log("initializing arcs");
-    let arcsArray =
-      arcType === "ArcPlaceToTransition"
-        ? self._webgmePetriNet.arcsPlaceToTransition
-        : self._webgmePetriNet.arcsTransitionToPlace;
-    arcsArray.forEach((arc) => {
-      let src =
-        arcType === "ArcPlaceToTransition"
-          ? self._webgmePetriNet.places[arc.src]
-          : self._webgmePetriNet.transitions[arc.src];
-      let dst =
-        arcType === "ArcPlaceToTransition"
-          ? self._webgmePetriNet.transitions[arc.dst]
-          : self._webgmePetriNet.places[arc.dst];
-
-      console.log("setting jointOutArcs for src:");
-      console.log(src);
-      src.jointOutArcs = src.jointOutArcs || {};
-      let link = new joint.shapes.standard.Link({
+    let createJointLink = (a, b, name) => {
+      return new joint.shapes.standard.Link({
         // need to use the joint ids from the actual place and trans ids
-        source: { id: src.joint.id },
-        target: { id: dst.joint.id },
+        source: { id: a.id },
+        target: { id: b.id },
         attrs: {
           line: {
             strokeWidth: 2,
@@ -252,13 +544,30 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
             },
             attrs: {
               text: {
-                text: arc.name,
+                text: name,
                 fontWeight: "bold",
               },
             },
           },
         ],
       });
+    };
+    let arcsArray =
+      arcType === "ArcPlaceToTransition"
+        ? self._webgmePetriNet.arcsPlaceToTransition
+        : self._webgmePetriNet.arcsTransitionToPlace;
+    arcsArray.forEach((arc) => {
+      let src =
+        arcType === "ArcPlaceToTransition"
+          ? self._webgmePetriNet.places[arc.src]
+          : self._webgmePetriNet.transitions[arc.src];
+      let dst =
+        arcType === "ArcPlaceToTransition"
+          ? self._webgmePetriNet.transitions[arc.dst]
+          : self._webgmePetriNet.places[arc.dst];
+      src.jointOutArcs = src.jointOutArcs || {};
+      console.log(`creating a link from src=${src.id} to dst=${dst.id}`);
+      let link = createJointLink(src.joint, dst.joint, arc.name);
       link.addTo(self._jointPetriNet);
       src.jointOutArcs[arc.id] = link;
     });
@@ -266,8 +575,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
 
   // State Machine manipulating functions called from the controller
   SimVizWidget.prototype.initMachine = function (petriNetDescriptor) {
-    console.log("petriNetDescriptor");
-    console.log(petriNetDescriptor);
     const self = this;
     self._webgmePetriNet = petriNetDescriptor;
     self._jointPetriNet.clear();
@@ -276,35 +583,72 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     ["ArcPlaceToTransition", "ArcTransitionToPlace"].forEach((arcType) => {
       SimVizWidget.prototype.initializeArcs(self, arcType);
     });
-    console.log("refreshing visualization");
     //now refresh the visualization
     self._jointPaper.updateViews();
-    console.log("refreshed with .updateViews()");
-
-    console.log("decorating machine with ._decorateMachine()");
     self._decorateMachine();
-    console.log("decorated");
   };
 
   SimVizWidget.prototype.destroyMachine = function () {};
 
   SimVizWidget.prototype.fireEvent = function (event) {
-    // event an arc to fire.
+    // event is the string "FIRE"
 
-    /* The following definitions cover how the petri net
-    progress from one marking to another:
-    1) t∈T is ​enabled ​if∀p∈P |∃f(p→t)∈F M(p) > 0 - for all
-    ​inplaces ​of the transition (that are connected to the
-      transition via an incoming arc) the amount of tokens
-      at the place is non zero
+    /* reference: https://github.com/clientIO/joint/blob/master/demo/petri%20nets/src/pn.js#L14 */
+    let fireTransition = (t, sec, self) => {
+      var inbound = self._jointPetriNet.getConnectedLinks(t, { inbound: true });
+      var outbound = self._jointPetriNet.getConnectedLinks(t, {
+        outbound: true,
+      });
 
-    2) Firing ​an enabled transition decreases the amount of
-    tokens on all ​inplaces w​ ith one and increases the amount
-    of token in all ​outplaces ​of the transition by one.
-    */
-    console.log("fire event");
-    console.log(event);
+      var placesBefore = inbound.map(function (link) {
+        return link.getSourceElement();
+      });
+      var placesAfter = outbound.map(function (link) {
+        return link.getTargetElement();
+      });
+      var isFirable = true;
+      placesBefore.forEach(function (p) {
+        if (p.get("tokens") === 0) {
+          isFirable = false;
+        }
+      });
 
+      if (isFirable) {
+        placesBefore.forEach(function (p) {
+          // Let the execution finish before adjusting the value of tokens. So that we can loop over all transitions
+          // and call fireTransition() on the original number of tokens.
+          setTimeout(function () {
+            p.set("tokens", p.get("tokens") - 1);
+          }, 0);
+
+          var links = inbound.filter(function (l) {
+            return l.getSourceElement() === p;
+          });
+
+          links.forEach(function (l) {
+            var token = joint.V("circle", { r: 5, fill: "#feb662" });
+            l.findView(self._jointPaper).sendToken(token, sec * 1000);
+          });
+        });
+
+        placesAfter.forEach(function (p) {
+          var links = outbound.filter(function (l) {
+            return l.getTargetElement() === p;
+          });
+
+          links.forEach(function (l) {
+            var token = joint.V("circle", { r: 5, fill: "#feb662" });
+            l.findView(self._jointPaper).sendToken(
+              token,
+              sec * 1000,
+              function () {
+                p.set("tokens", p.get("tokens") + 1);
+              }
+            );
+          });
+        });
+      }
+    };
     const self = this;
     if (this._webgmePetriNet.deadlockActive(self._webgmePetriNet)) {
       this._client.sendMessageToPlugin(
@@ -313,26 +657,10 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
         "Deadlock has been reached"
       );
     } else {
-      // get the place from which this arc is coming.
-      let srcId = event.src;
-      console.log(`event src id = ${srcId}`);
-      let src = this._webgmePetriNet.places[srcId];
-      console.log("actual src");
-      console.log(src);
-      let link = src.jointOutArcs[event.id];
-      console.log("link: ");
-      console.log(link);
-      let linkView = link.findView(self._jointPaper);
-      console.log("linkView");
-      console.log(linkView);
-      linkView.sendToken(
-        joint.V("circle", { r: 10, fill: "black" }),
-        { duration: 500 },
-        function () {
-          // self._webgmePetriNet.current = current.outArcs[event];
-          self._decorateMachine();
-        }
-      );
+      // attempt fire on all transitions.
+      Object.keys(self._webgmePetriNet.transitions).forEach((tid) => {
+        fireTransition(self._webgmePetriNet.transitions[tid].joint, 1, self);
+      });
     }
   };
 
@@ -354,10 +682,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
         petriNet.places[placeId].currentMarking
       );
     });
-    // fireable events SHOULD be an array of ArcsPlaceToTransition
-    petriNet.setFireableEvents(
-      petriNet.getFireableEvents(this._client, petriNet)
-    );
   };
 
   SimVizWidget.prototype._setCurrentState = function (newCurrent) {
