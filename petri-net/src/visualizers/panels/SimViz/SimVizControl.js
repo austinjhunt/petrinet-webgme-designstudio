@@ -126,7 +126,6 @@ define([
     let petriNet = {
       /* functions to pass logic to widget */
       deadlockActive: _petriNetInDeadlock,
-      getFireableEvents: _getFireableEvents,
       /* end functions */
       startingPlace: startingPlaceId,
       places: {},
@@ -161,7 +160,6 @@ define([
           inPlaces: getInPlacesToTransition(elementId, outputMatrix),
           outArcs: getOutArcsFromTransition(elementId, arcsTransitionToPlace),
           position: node.getRegistry("position"),
-          enabled: transitionIsEnabled(self._client, elementId, outputMatrix),
         };
       }
     });
