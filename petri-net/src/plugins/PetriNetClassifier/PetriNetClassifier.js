@@ -52,32 +52,293 @@ define([
   PetriNetClassifier.prototype.main = function (callback) {
     // Use this to access core, project, result, logger etc from PluginBase.
     const self = this;
-
-    // Using the logger.
-    self.logger.debug("This is a debug message.");
-    self.logger.info("This is an info message.");
-    self.logger.warn("This is a warning message.");
-    self.logger.error("This is an error message.");
-
+    console.log(Object.getOwnPropertyNames(this));
+    console.log(Object.getOwnPropertyNames(this.notificationHandlers[0]));
+    console.log(Object.getOwnPropertyNames(this.invokedPlugins));
     // Using the coreAPI to make changes.
     const nodeObject = self.activeNode;
+
+    self.core.loadOwnSubTree(self.activeNode, (error, nodes) => {
+      self.transitions = self.getTransitions(nodes);
+      self.places = self.getPlaces(nodes);
+      self.arcsPlaceToTransition = self.getArcs("ArcPlaceToTransition", nodes);
+      self.arcsTransitionToPlace = self.getArcs("ArcTransitionToPlace", nodes);
+      self.inputMatrix = self.getInputMatrix();
+      self.outputMatrix = self.getOutputMatrix();
+
+      if (self.isWorkflow()) {
+        self.sendNotification({
+          message: "This is a Workflow Petri Net!",
+          progress: 25,
+          severity: "success",
+        });
+      }
+    });
+
     // self.core.setAttribute(nodeObject, 'name', 'My new obj');
     // self.core.setRegistry(nodeObject, 'position', {x: 70, y: 70});
 
     // This will save the changes. If you don't want to save;
     // exclude self.save and call callback directly from this scope.
-    self
-      .save("PetriNetClassifier updated model.")
-      .then(() => {
-        self.result.setSuccess(true);
-        callback(null, self.result);
+    // self
+    //   .save("PetriNetClassifier updated model.")
+    //   .then(() => {
+    //     self.result.setSuccess(true);
+    //     callback(null, self.result);
+    //   })
+    //   .catch((err) => {
+    //     // Result success is false at invocation.
+    //     self.logger.error(err.stack);
+    //     callback(err, self.result);
+    //   });
+  };
+
+  PetriNetClassifier.prototype.getMetaName = function (node) {
+    let self = this;
+    return self.core.getAttribute(self.core.getMetaType(node), "name");
+  };
+
+  PetriNetClassifier.prototype.getArcs = function (metaName, nodes) {
+    // metaName = 'ArcPlaceToTransition' or 'ArcTransitionToPlace'
+    // nodes = response from loadOwnSubTree
+    let self = this;
+    let arcs = [];
+    let getArcPointerNodeId = (arc, pointerName) => {
+      // return id of node being pointed at where pointerName is either 'src' or 'dst'
+      return self.core.getPointerPath(arc, pointerName);
+    };
+    nodes.forEach((node) => {
+      if (self.getMetaName(node) === metaName) {
+        arcs.push({
+          src: getArcPointerNodeId(node, "src"),
+          dst: getArcPointerNodeId(node, "dst"),
+        });
+      }
+    });
+    return arcs;
+  };
+  PetriNetClassifier.prototype.getPlaces = function (nodes) {
+    let self = this;
+    return nodes
+      .filter((node) => {
+        let meta = self.getMetaName(node);
+        return meta === "Place";
       })
-      .catch((err) => {
-        // Result success is false at invocation.
-        self.logger.error(err.stack);
-        callback(err, self.result);
+      .map((place) => {
+        return {
+          id: self.core.getPath(place),
+          node: place,
+        };
+      });
+  };
+  PetriNetClassifier.prototype.getTransitions = function (nodes) {
+    let self = this;
+    return nodes
+      .filter((node) => {
+        let meta = self.getMetaName(node);
+        return meta === "Transition";
+      })
+      .map((transition) => {
+        return {
+          id: self.core.getPath(transition),
+          node: transition,
+        };
       });
   };
 
+  PetriNetClassifier.prototype.getOutFlowFromPlaceToTransition = function (
+    placeId,
+    transitionId
+  ) {
+    // return true if arc from placeId to transitionId else false
+    return this.arcsPlaceToTransition.some((arc) => {
+      return arc.src === placeId && arc.dst === transitionId;
+    });
+  };
+  PetriNetClassifier.prototype.getInFlowToPlaceFromTransition = function (
+    placeId,
+    transitionId
+  ) {
+    // return true if arc to placeId from transitionId else false
+    return this.arcsTransitionToPlace.some((arc) => {
+      return arc.src === transitionId && arc.dst === placeId;
+    });
+  };
+  PetriNetClassifier.prototype.getOutputMatrix = function () {
+    /* return object representing out flow
+  from each place to each transition
+  {
+    'place1': {
+      'trans1id': 0,
+      'trans2id': 1,
+      'trans3id': 0
+    },
+  ...
+  }
+  */
+    let self = this;
+    let outputMatrix = {};
+    self.places
+      .map((p) => p.id)
+      .forEach((pid, i) => {
+        outputMatrix[pid] = {};
+        self.transitions
+          .map((t) => t.id)
+          .forEach((tid, j) => {
+            outputMatrix[pid][tid] = self.getOutFlowFromPlaceToTransition(
+              pid,
+              tid
+            );
+          });
+      });
+    return outputMatrix;
+  };
+
+  PetriNetClassifier.prototype.getInputMatrix = function () {
+    /* return object representing in flow to each
+  place from each transition e.g.
+  {
+    'place1': {
+      'trans1id': 0,
+       'trans2id': 1,
+       'trans3id': 0
+      }, ...
+    }
+    */
+    let self = this;
+    let inputMatrix = {};
+    self.places
+      .map((p) => p.id)
+      .forEach((pid, i) => {
+        inputMatrix[pid] = {};
+        self.transitions
+          .map((t) => t.id)
+          .forEach((tid, j) => {
+            inputMatrix[pid][tid] = self.getInFlowToPlaceFromTransition(
+              pid,
+              tid
+            );
+          });
+      });
+    return inputMatrix;
+  };
+
+  PetriNetClassifier.prototype.removeItemFromArray = function (item, array) {
+    const index = array.indexOf(item);
+    if (index > -1) {
+      // only splice array when item is found
+      array.splice(index, 1); // 2nd parameter means remove one item only
+    }
+  };
+
+  PetriNetClassifier.prototype.isWorkflow = function () {
+    /* return true if petri net is a workflow petri net,
+      false otherwise.
+      A petri net is a workflow net if it has exactly one
+      source place s where inflow of s is empty set, one sink
+      place o where outflow of o is empty set, and every
+      x∈P∪T is on a path from s to o */
+    let self = this;
+    if (self.places.length == 1 && self.transitions.length == 0) {
+      return true; // technically a workflow.
+    }
+    self.logger.info(
+      "This PN has more than one place and at least one transition."
+    );
+    // get places with no inflow (source) and places with no outflow (sink)
+    let sourceIds = Object.keys(self.inputMatrix).filter((placeId) => {
+      return Object.keys(self.inputMatrix[placeId]).every(
+        (transitionId) => !self.inputMatrix[placeId][transitionId]
+      );
+    });
+    let sinkIds = Object.keys(self.outputMatrix).filter((placeId) => {
+      return Object.keys(self.outputMatrix[placeId]).every(
+        (transitionId) => !self.outputMatrix[placeId][transitionId]
+      );
+    });
+    // must be exactly one source and exactly one sink
+    if (sourceIds.length != 1 || sinkIds.length != 1) {
+      return false;
+    }
+    self.logger.info(
+      "This PN has only one source and one sink, might be a workflow."
+    );
+    // if exactly one source and exactly one sink, all other places & transitions
+    // must be on path from source to sink.
+    let placeIds = self.places.map((p) => p.id);
+    let transIds = self.transitions.map((t) => t.id);
+    let allPlacesAndTransitions = placeIds.concat(transIds);
+
+    let startingPlaceId = sourceIds[0];
+    let queue = new Queue(allPlacesAndTransitions.length);
+    let explored = new Set();
+    explored.add(startingPlaceId);
+    self.removeItemFromArray(startingPlaceId, allPlacesAndTransitions);
+    queue.enqueue(startingPlaceId);
+    let final; // final should be the sinkId after loop is over.
+    while (!queue.isEmpty) {
+      let elemId = queue.dequeue(); // could be P or T
+      final = elemId;
+      if (placeIds.includes(elemId)) {
+        // place. visit all out transitions and the next places as well.
+        Object.keys(self.outputMatrix[elemId])
+          .filter((transId) => !explored.has(transId))
+          .forEach((transId) => {
+            explored.add(transId);
+            self.removeItemFromArray(transId, allPlacesAndTransitions);
+            queue.enqueue(transId);
+            // visit places with this transid as intransition (those are "next" places)
+            Object.keys(self.inputMatrix)
+              .filter(
+                (placeId) =>
+                  self.inputMatrix[placeId][transId] && !explored.has(placeId)
+              )
+              .forEach((placeId) => {
+                explored.add(placeId);
+                self.removeItemFromArray(placeId, allPlacesAndTransitions);
+                queue.enqueue(placeId);
+              });
+          });
+      } else if (transIds.includes(elemId)) {
+        // transition.
+      }
+    }
+    if (final == sinkIds[0] && allPlacesAndTransitions.length == 0) {
+      // all places transitions were covered, starting with source and ending with sink
+      return true;
+    } else {
+      self.logger.info(
+        `Not a workflow. Final ${final} != sink ${sinkIds[0]} OR allPlacesAndTransitions not empty (length=${allPlacesAndTransitions.length})`
+      );
+    }
+  };
+
+  /* Utility Class */
+  class Queue {
+    constructor() {
+      this.elements = {};
+      this.head = 0;
+      this.tail = 0;
+    }
+    enqueue(element) {
+      this.elements[this.tail] = element;
+      this.tail++;
+    }
+    dequeue() {
+      const item = this.elements[this.head];
+      delete this.elements[this.head];
+      this.head++;
+      return item;
+    }
+    peek() {
+      return this.elements[this.head];
+    }
+    get length() {
+      return this.tail - this.head;
+    }
+    get isEmpty() {
+      return this.length === 0;
+    }
+  }
   return PetriNetClassifier;
 });

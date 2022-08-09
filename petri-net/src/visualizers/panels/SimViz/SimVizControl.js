@@ -242,11 +242,16 @@ define([
   /* * * * * * * * * * Updating the toolbar * * * * * * * * * */
   SimVizControl.prototype._displayToolbarItems = function () {
     if (this._toolbarInitialized === true) {
-      for (var i = this._toolbarItems.length; i--; ) {
-        this._toolbarItems[i].show();
-      }
       if (this._fireableEvents === null || this._fireableEvents.length == 0) {
+        this.$btnSingleEvent.hide();
         this.$btnEventSelector.hide();
+        this.$deadlockLabel.show();
+        this.$btnResetMachine.hide();
+      } else {
+        this.$btnSingleEvent.show();
+        this.$btnEventSelector.show();
+        this.$btnResetMachine.show();
+        this.$deadlockLabel.hide();
       }
     } else {
       this._initializeToolbar();
@@ -275,9 +280,10 @@ define([
     self._toolbarItems = [];
     self._toolbarItems.push(toolBar.addSeparator());
 
-    /************** Go to hierarchical parent button ****************/
-    self.$btnReachCheck = toolBar.addButton({
-      title: "Check state machine reachability properties",
+    //
+    self.$btnPetriNetClassifier = toolBar.addButton({
+      text: "Classify! ",
+      title: "Classify this petri net",
       icon: "glyphicon glyphicon-question-sign",
       clickFn: function (/*data*/) {
         const context = self._client.getCurrentPluginContext(
@@ -298,10 +304,11 @@ define([
         );
       },
     });
-    self._toolbarItems.push(self.$btnReachCheck);
+    self._toolbarItems.push(self.$btnPetriNetClassifier);
 
     self.$btnResetMachine = toolBar.addButton({
       title: "Reset simulator",
+      text: "Reset simulator  ",
       icon: "glyphicon glyphicon-fast-backward",
       clickFn: function (/*data*/) {
         self._widget.resetMachine();
@@ -311,16 +318,17 @@ define([
 
     // when there are multiple enabled transitions to choose
     // from we offer a selector
-    this.$btnEventSelector = toolBar.addDropDownButton({
-      text: "Fire a specific enabled transition",
+    self.$btnEventSelector = toolBar.addDropDownButton({
+      text: "Fire a specific enabled transition  ",
       title: "Fire a specific enabled transition",
+      icon: "glyphicon glyphicon-play",
     });
-    this._toolbarItems.push(this.$btnEventSelector);
-    this.$btnEventSelector.hide();
+    self._toolbarItems.push(self.$btnEventSelector);
+    self.$btnEventSelector.hide();
 
     // play button for firing ALL enabled transitions
     self.$btnSingleEvent = toolBar.addButton({
-      text: "Fire all enabled transitions!",
+      text: "Fire all enabled transitions!  ",
       title: "Fire all enabled transitions",
       data: { event: "FIRE" },
       icon: "glyphicon glyphicon-play",
@@ -329,6 +337,13 @@ define([
       },
     });
     self._toolbarItems.push(self.$btnSingleEvent);
+    self.$btnSingleEvent.hide();
+
+    // play button for firing ALL enabled transitions
+    self.$deadlockLabel = toolBar.addLabel();
+    self.$deadlockLabel.text("DEADLOCK (NO ENABLED TRANSITIONS)");
+    self._toolbarItems.push(self.$deadlockLabel);
+    self.$deadlockLabel.hide();
     /************** Dropdown for event progression *******************/
     self._toolbarInitialized = true;
   };

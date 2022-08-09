@@ -553,7 +553,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
             "ref-y": -20,
             ref: ".root",
             fontSize: 18,
-            fontWeight: "bold",
           },
           ".label.enabled": {
             fill: "green",
@@ -779,7 +778,7 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       setTimeout(() => {
         // update the decoration to indicate fireable/enabled transitions
         self._decorateMachine();
-      }, 1500);
+      }, 1250);
     }
   };
 
