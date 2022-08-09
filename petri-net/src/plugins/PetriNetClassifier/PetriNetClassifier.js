@@ -52,9 +52,6 @@ define([
   PetriNetClassifier.prototype.main = function (callback) {
     // Use this to access core, project, result, logger etc from PluginBase.
     const self = this;
-    console.log(Object.getOwnPropertyNames(this));
-    console.log(Object.getOwnPropertyNames(this.notificationHandlers[0]));
-    console.log(Object.getOwnPropertyNames(this.invokedPlugins));
     // Using the coreAPI to make changes.
     const nodeObject = self.activeNode;
 

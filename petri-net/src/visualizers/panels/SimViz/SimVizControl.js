@@ -246,7 +246,7 @@ define([
         this.$btnSingleEvent.hide();
         this.$btnEventSelector.hide();
         this.$deadlockLabel.show();
-        this.$btnResetMachine.hide();
+        this.$btnResetMachine.show();
       } else {
         this.$btnSingleEvent.show();
         this.$btnEventSelector.show();

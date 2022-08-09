@@ -578,7 +578,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     });
   };
   SimVizWidget.prototype.updateTransitionEnabledStatuses = function () {
-    console.log("Now updating transition enabled statuses");
     /* call this after full graph is created */
     let self = this;
     let enabledTransitions = [];
@@ -590,12 +589,18 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
         enabledTransitions.push(transition);
       }
     });
-    console.log(
-      "enabled transitions before setFireableeevents(enabledTransitions)"
-    );
-    console.log(enabledTransitions);
     // updates the toolbar dropdown with specific fireable transitions
     self._webgmePetriNet.setFireableEvents(enabledTransitions);
+    if (enabledTransitions.length === 0 && !self.JUST_NOTIFIED_DEADLOCK) {
+      self._client.notifyUser({
+        message: "Deadlock has been reached!",
+        severity: "info",
+      });
+      self.JUST_NOTIFIED_DEADLOCK = true;
+      setTimeout(() => {
+        self.JUST_NOTIFIED_DEADLOCK = false;
+      }, 5000);
+    }
   };
 
   SimVizWidget.prototype.initializeArcs = function (arcType) {
@@ -762,24 +767,16 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
         fireTransition(self._webgmePetriNet.transitions[tid].joint, 1, self);
       });
     };
-    if (this._webgmePetriNet.deadlockActive(self._webgmePetriNet)) {
-      this._client.sendMessageToPlugin(
-        "PetriNetClassifier",
-        "DEADLOCK_MSG",
-        "Deadlock has been reached"
-      );
+    if (!transition) {
+      fireAllEnabledTransitions(self);
     } else {
-      if (!transition) {
-        fireAllEnabledTransitions(self);
-      } else {
-        // one transition clicked
-        fireTransition(transition.joint, 1, self);
-      }
-      setTimeout(() => {
-        // update the decoration to indicate fireable/enabled transitions
-        self._decorateMachine();
-      }, 1250);
+      // one transition clicked
+      fireTransition(transition.joint, 1, self);
     }
+    setTimeout(() => {
+      // update the decoration to indicate fireable/enabled transitions
+      self._decorateMachine();
+    }, 1250);
   };
 
   SimVizWidget.prototype.resetMachine = function () {
