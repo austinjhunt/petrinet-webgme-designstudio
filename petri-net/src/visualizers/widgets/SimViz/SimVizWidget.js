@@ -335,14 +335,10 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
           vTokens.removeClass(nums[n]);
         });
         vTokens.removeClass("alot");
-
-        console.log(Array(2).fill(joint.V("circle")));
-
         var tokens = this.model.get("tokens");
         if (!tokens) return;
 
         if (tokens <= 12) {
-          console.log(`tokens: ${tokens}`);
           vTokens.addClass(nums[tokens]);
           if (tokens == 1) {
             vTokens.append(joint.V("circle"));
@@ -495,13 +491,11 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     to respective joint vertex
     */
     let self = this;
-    console.log("initializing place vertices");
     self._webgmePetriNet.id2place = {
       /* map on-screen ids to place ids */
     };
     Object.keys(self._webgmePetriNet.places).forEach((placeId) => {
       let place = self._webgmePetriNet.places[placeId];
-      console.log(`adding place vertex with tokens = ${place.currentMarking}`);
       let vertex = new joint.shapes.pn.Place({
         position: place.position,
         size: { width: 80, height: 80 },
@@ -520,7 +514,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
         },
         tokens: place.currentMarking,
       });
-      console.log(vertex);
       self._jointPetriNet.addCell([vertex]);
       self._webgmePetriNet.places[placeId].joint = vertex;
       self._webgmePetriNet.id2place[vertex.id] = placeId;
@@ -535,7 +528,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
     to respective joint vertex
     */
     let self = this;
-    console.log("initializing transition vertices");
     self._webgmePetriNet.id2transition = {
       /* map on-screen ids to place ids */
     };
@@ -652,7 +644,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
           ? self._webgmePetriNet.transitions[arc.dst]
           : self._webgmePetriNet.places[arc.dst];
       src.jointOutArcs = src.jointOutArcs || {};
-      console.log(`creating a link from src=${src.id} to dst=${dst.id}`);
       let link = createJointLink(src.joint, dst.joint, arc.name);
       link.addTo(self._jointPetriNet);
       src.jointOutArcs[arc.id] = link;
@@ -687,10 +678,7 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       });
     }
     var isFirable = true;
-    console.log("looping over placesBefore:");
     placesBefore.forEach(function (p) {
-      let tokens = p.get("tokens");
-      console.log(`p tokens = ${tokens}`);
       if (p.get("tokens") === 0) {
         isFirable = false;
       }

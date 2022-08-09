@@ -46,14 +46,10 @@ let transitionIsEnabled = (client, transitionId, outputMatrix) => {
   (that are connected to the transition via an
   incoming arc) the amount of tokens at the place is non zero
   */
-  console.log(`checking if transition ${transitionId} enabled`);
   return getInPlacesToTransition(transitionId, outputMatrix).every(
     (inPlaceId) => {
       let marking = parseInt(
         client.getNode(inPlaceId).getAttribute("currentMarking")
-      );
-      console.log(
-        `inplaceId ${inPlaceId} to transitionId ${transitionId} marking = ${marking}`
       );
       return marking > 0;
     }

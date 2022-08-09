@@ -18,12 +18,10 @@ define([
     this._initWidgetEventHandlers();
     // we need to fix the context of this function as it will be called from the widget directly
     this.setFireableEvents = this.setFireableEvents.bind(this);
-    console.log("end control constructor");
     this._logger.debug("ctor finished");
   }
 
   SimVizControl.prototype._initWidgetEventHandlers = function () {
-    console.log("init widget event handlers");
     this._widget.onNodeClick = function (id) {
       // Change the current active object
       WebGMEGlobal.State.registerActiveObject(id);
@@ -62,7 +60,6 @@ define([
   /* * * * * * * * Node Event Handling * * * * * * * */
   SimVizControl.prototype._eventCallback = function (events) {
     const self = this;
-    // console.log(events);
     events.forEach((event) => {
       if (event.eid && event.eid === self._currentNodeId) {
         if (event.etype == "load" || event.etype == "update") {
@@ -179,8 +176,6 @@ define([
 
   SimVizControl.prototype.setFireableEvents = function (enabledTransitions) {
     this._fireableEvents = enabledTransitions;
-    console.log("setFireableEvents:enabledTransitions:");
-    console.log(enabledTransitions);
     if (enabledTransitions && enabledTransitions.length >= 1) {
       // fill dropdown button with options. only including enabled transitions
       this.$btnEventSelector.clear();
