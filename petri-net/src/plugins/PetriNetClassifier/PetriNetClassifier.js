@@ -66,8 +66,21 @@ define([
       if (self.isWorkflow()) {
         self.sendNotification({
           message: "This is a Workflow Petri Net!",
-          progress: 25,
-          severity: "success",
+        });
+      }
+      if (self.isFreeChoice()) {
+        self.sendNotification({
+          message: "This is a Free Choice Petri Net!",
+        });
+      }
+      if (self.isMarkedGraph()) {
+        self.sendNotification({
+          message: "This is a Marked Graph Petri Net!",
+        });
+      }
+      if (self.isStateMachine()) {
+        self.sendNotification({
+          message: "This is a State Machine Petri Net!",
         });
       }
     });
@@ -296,8 +309,6 @@ define([
                 queue.enqueue(placeId);
               });
           });
-      } else if (transIds.includes(elemId)) {
-        // transition.
       }
     }
     if (final == sinkIds[0] && allPlacesAndTransitions.length == 0) {
@@ -307,7 +318,76 @@ define([
       self.logger.info(
         `Not a workflow. Final ${final} != sink ${sinkIds[0]} OR allPlacesAndTransitions not empty (length=${allPlacesAndTransitions.length})`
       );
+      return false;
     }
+  };
+
+  PetriNetClassifier.prototype.isFreeChoice = function () {
+    /*
+    Free-choice petri net​ - if the intersection of the
+    inplaces sets of two transitions are not empty,
+    then the two transitions should be the same
+    (each transition has its own unique set if ​inplaces)​
+    */
+
+    // build a map. each transition id is a key. value is corresponding set of inplaces.
+    // then compare each pair of transitions in the map.
+    let map = {};
+    let intersection = (arr1, arr2) => {
+      return arr1.filter((val) => arr2.includes(val));
+    };
+    let self = this;
+    self.transitions.forEach((trans) => {
+      map[trans.id] = Object.keys(self.outputMatrix).filter((placeId) => {
+        return self.outputMatrix[placeId][trans.id];
+      });
+    });
+    let isFreeChoice = Object.keys(map).every((t1, i) => {
+      let t1_inplaces = map[t1];
+      return Object.keys(map).every((t2, j) => {
+        let t2_inplaces = map[t2];
+        return intersection(t1_inplaces, t2_inplaces).length == 0 || t1 === t2;
+      });
+    });
+    return isFreeChoice;
+  };
+
+  PetriNetClassifier.prototype.isMarkedGraph = function () {
+    /*
+    a petri net is a marked graph if every place has exactly one out transition
+    and one in transition.
+    */
+    let self = this;
+    return self.places.every((place) => {
+      let _id = place.id;
+      return (
+        Object.keys(self.outputMatrix[_id]).filter(
+          (transId) => self.outputMatrix[_id][transId]
+        ).length == 1 &&
+        Object.keys(self.inputMatrix[_id]).filter(
+          (transId) => self.inputMatrix[_id][transId]
+        ).length == 1
+      );
+    });
+  };
+
+  PetriNetClassifier.prototype.isStateMachine = function () {
+    /*
+    State machine​ - a petri net is a state machine if
+    every transition has exactly one ​inplace and one ​outplace​.
+    */
+    let self = this;
+    return self.transitions.every((trans) => {
+      let _id = trans.id;
+      return (
+        Object.keys(self.outputMatrix).filter(
+          (placeId) => self.outputMatrix[placeId][_id]
+        ).length == 1 &&
+        Object.keys(self.inputMatrix).filter(
+          (placeId) => self.inputMatrix[placeId][_id]
+        ).length == 1
+      );
+    });
   };
 
   /* Utility Class */
