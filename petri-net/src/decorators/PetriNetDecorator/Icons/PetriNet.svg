@@ -1,15 +1,3 @@
-<svg width="200" height="160" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1487 1052">
- <title>Petri Net</title>
-
- <metadata id="metadata4057">image/svg+xml</metadata>
- <g>
-  <g id="svg_1">
-   <path fill="#ffffff" stroke="#000000" stroke-width="5" stroke-miterlimit="4" id="path4214" d="m737.946533,319.269592c0,48.815552 -39.572815,88.388336 -88.388367,88.388336c-48.815491,0 -88.388367,-39.572784 -88.388367,-88.388336c0,-48.815552 39.572876,-88.388351 88.388367,-88.388351c48.815552,0 88.388367,39.5728 88.388367,88.388351z"/>
-    <path fill="#ffffff" stroke="#000000" stroke-width="5" stroke-miterlimit="4" id="path4214-8" d="m1142.367554,418.396576c0,48.815552 -39.572754,88.388336 -88.388306,88.388336c-48.815552,0 -88.388367,-39.572784 -88.388367,-88.388336c0,-48.815552 39.572815,-88.388336 88.388367,-88.388336c48.815552,0 88.388306,39.572784 88.388306,88.388336z"/>
-   <path fill="#ffffff" stroke="#ff5500" stroke-width="5" stroke-miterlimit="4" id="path4214-8-8" d="m837.448547,707.607605c0,48.815552 -39.572815,88.388306 -88.388367,88.388306c-48.815552,0 -88.388306,-39.572754 -88.388306,-88.388306c0,-48.815552 39.572754,-88.388367 88.388306,-88.388367c48.815552,0 88.388367,39.572815 88.388367,88.388367z"/>
-    <path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-miterlimit="4" id="path6470" d="m744.194763,348.845795l210.884277,49.183594"/>
-   <path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-miterlimit="4" id="path6474" d="m666.926636,416.646393l57.083008,194.657196"/>
-   </g>
 
    <%
     	let childrenIds = getChildrenIds();
@@ -21,6 +9,7 @@
         let getArcPointerNodeId = (arc, pointerName) => {
             // return id of node being pointed at where pointerName is either 'src' or 'dst'
         	let pointerId = arc.getPointerId(pointerName);
+            console.log(`pointerid: ${pointerId}`)
             return pointerId;
         };
 
@@ -189,13 +178,34 @@
     <%
     let counter = 0;
     let yOffset = 0;
-    let ypos = 85;
-    let xpos = 10;
+    let ypos = markingArray.length == 0 ? 90 : 77;
+    let xpos =  30 / (1+markingArray.length);
     let fontSize = 6; // rem
     let max_places_per_row = 4;
     let fullText = "M: "; // use fullText of each item to determine x pos of the following item
     let totalRowLength = 0;
+
+    let defaultViewBoxWidth=1487;
+    let defaultViewBoxHeight=1052;
+
+    let vbw = defaultViewBoxWidth + (100*markingArray.length);
+    let vbh = defaultViewBoxHeight + (20*markingArray.length);
+    let w = markingArray.length == 0 ? 200 : 400;
+    let h = markingArray.length == 0 ? 150 : 160;
     %>
+<svg width="<%= w %>" height="<%= h %>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 <%= vbw %> <%= vbh %>">
+ <title>Petri Net</title>
+
+ <metadata id="metadata4057">image/svg+xml</metadata>
+ <g>
+  <g id="svg_1">
+   <path fill="#ffffff" stroke="#000000" stroke-width="5" stroke-miterlimit="4" id="path4214" d="m737.946533,319.269592c0,48.815552 -39.572815,88.388336 -88.388367,88.388336c-48.815491,0 -88.388367,-39.572784 -88.388367,-88.388336c0,-48.815552 39.572876,-88.388351 88.388367,-88.388351c48.815552,0 88.388367,39.5728 88.388367,88.388351z"/>
+    <path fill="#ffffff" stroke="#000000" stroke-width="5" stroke-miterlimit="4" id="path4214-8" d="m1142.367554,418.396576c0,48.815552 -39.572754,88.388336 -88.388306,88.388336c-48.815552,0 -88.388367,-39.572784 -88.388367,-88.388336c0,-48.815552 39.572815,-88.388336 88.388367,-88.388336c48.815552,0 88.388306,39.572784 88.388306,88.388336z"/>
+   <path fill="#ffffff" stroke="#ff5500" stroke-width="5" stroke-miterlimit="4" id="path4214-8-8" d="m837.448547,707.607605c0,48.815552 -39.572815,88.388306 -88.388367,88.388306c-48.815552,0 -88.388306,-39.572754 -88.388306,-88.388306c0,-48.815552 39.572754,-88.388367 88.388306,-88.388367c48.815552,0 88.388367,39.572815 88.388367,88.388367z"/>
+    <path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-miterlimit="4" id="path6470" d="m744.194763,348.845795l210.884277,49.183594"/>
+   <path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-miterlimit="4" id="path6474" d="m666.926636,416.646393l57.083008,194.657196"/>
+   </g>
+
    <g style="border-bottom: black">
     <text style="white-space: normal;  font-size: <%= fontSize %>rem; font-weight:bold;" y="<%= ypos %>%" x="<%= xpos %>%" >
     <%= fullText %>
@@ -205,11 +215,12 @@
     	if (counter >= max_places_per_row){
     		counter = 0; totalRowLength = 0; yOffset += 10;
         }
+        fullText = `${place.placeName}-${place.placeMarking}` ;
+
     %>
-    <text y="<%= ypos + yOffset %>%" x="<%= (xpos + (totalRowLength * 3) + 10)  %>%" style="white-space: normal; font-weight:bold;  font-size: <%= fontSize %>rem;%>">
+    <text y="<%= ypos + yOffset %>%" x="<%= (xpos+ totalRowLength + 6)  %>%" style="white-space: normal; font-weight:bold; font-size: <%= fontSize %>rem;%>">
       <%
-      fullText = `${place.placeName}-${place.placeMarking}` ;
-      totalRowLength += fullText.length;
+       totalRowLength += fullText.length + 6;
       %>
       <%= fullText %>
     </text>

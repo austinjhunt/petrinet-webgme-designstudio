@@ -93,7 +93,13 @@ Petri Nets can be used to model behavior of any dynamic distributed system in wh
 
 From [Investopedia](https://www.investopedia.com/terms/s/scm.asp), supply chain management is the _management of the flow of goods and services and includes all processes that transform raw materials into final products. It involves the active streamlining of a business's supply-side activities to maximize customer value and gain a competitive advantage in the marketplace._ In other words, we're looking at a perfect use case for Petri Net modeling. The flow of goods and services in a supply chain network is in itself dynamic behavior. Factories, plants, ports, and stores are nodes (places) within a supply chain network that at any point in time can carry a variety of quantifiable things, from financial value, to material, to information, and those quantifiable things need to be in place in sufficient amounts in order for transportation of said things to commence (i.e. firing a transition). [As explored by Petr Fiala](https://www.researchgate.net/publication/223105319_Information_Sharing_in_Supply_Chains), Petri Net modeling of supply chain networks can aid in supply chain management and consequently optimizing value for customers by eliminating distributed system inefficiencies.
 
-![supply chain management Petri Net](img/supplychain.png)
+#### Example: Supply Chain Management Model (found in the Real World Examples Petri Net container)
+
+The above example (included in the main project seed) demonstrates how one might model the flow of material (regardless of what that material is) through a supply chain network using a Petri Net, and moreover the recycling of that material as it moves through manufacturing, distribution, point of sale systems to customers, to recycling centers and back to manufacturers again. With such a model you can identify choke points at which material may stop flowing and make decisions regarding transports.
+
+With a supply chain network, we know that material must be sourced from a material source (or multiple in this example), whether foreign or domestic. The material MUST exist in order for the material to be transported to the port. Material must be at the port in order for it to then be transported to manufacturing locations, and so on through the distribution center, the individual retail stores, the customer base(s) for each of those stores and the recycling centers.
+
+This is perhaps one of the clearest use cases of Petri Net modeling because each "Place" is for the most part a physical place, and each transition is, for the most part, a transport or a transaction.
 
 ### Biology :thinking: :microscope: :test_tube:
 
