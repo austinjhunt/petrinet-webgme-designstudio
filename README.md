@@ -187,13 +187,27 @@ You've now created your own project within the design studio! So **how do you cr
 2. Let's make sure we're in the right visualizer. Double click the `ROOT` on the Composition object browser on the right. This sets the context to the root object.
    1. ![double click the ROOT object](img/double-click-root.jpg)
 3. Then click the `Composition` visualizer option on the left to make sure you're in the `Composition visualizer`.
-   1. ![composition visualizer for root](img/composition-visualizer.jpg)
+   1. ![composition visualizer for root](img/root-composition-view.png)
 4. Click and drag a `PetriNetContainer` into your main composition view.
    1. ![create petrinet container](img/create-petrinetcontainer.jpg)
 5. Double click the title of the PetriNetContainer you just added and change it to something like `MyExamples`:
    1. ![change title of petrinet container](img/change-container-title.jpg)
 6. Now double click the icon for the container to open it up. We're now in the Composition visualizer of the `MyExamples` container.
    1. ![my examples composition](img/myexamples-composition.jpg)
-7. Within this container, let's create our first petri net model instance. I'm going to call mine 'PingPong'. Drag in a PetriNet into your composition visualizer from the component selector on the left, similar to how you created the container.
+7. Within this container, let's create our first petri net model instance. Drag in a PetriNet into your composition visualizer from the component selector on the left, similar to how you created the container.
+8. Give it a name indicative of what you're modeling. I'm going to call mine 'PingPong'.
+   1. ![New ping pong model](img/new-pingpong.jpg)
+9. Double click the icon for the Petri Net.
+10. Here's where we get to start thinking. For a ping pong game, I'm going to represent two players, A and B, as places. I'm going to represent player A hitting the ball to player B as one transition, and player B hitting the ball to player A as another transition. To do this:
+    1. I drag in two Places (circles) and two Transitions (squares) from the left.
+    2. I double click their titles to rename them respectively as PlayerA, PlayerB, AtoB, and BtoA.
+    3. I then connect them in a way that represents the cyclical path the ball can take. I'm going to abstractly build this model with the assumption that the ball is always in play for demonstration sake. When I make a connections (an arc), I click on the arc (line) and open the Attributes property editor on the bottom right so I can rename it. Double clicking the title on an arc does not let you rename it like the other components.
+       1. ![rename an arc](img/rename-arc.jpg)
+    4. Since in a ping pong game each player hits the ball, then it bounces before reaching the next player, I can name the arcs before and after each transition as respectively `hit` and `bounce`. Also, I know there is only one ball in the game, and I can represent that ball as one token that simply moves between each of the players at each "round" or "fire". So, I can click on PlayerA, open its attribute editor on the right, and set its token value attribute (`currentMarking`) to 1 to indicate that Player A is initially serving the ball.
+       1. ![player A token value - serving the ball](img/player-a-token.jpg)
+11. Now that I've build the structure of the game, I can simulate it. I'll discuss simulation in detail in the next section. Note that right now all we've defined really is the initial structure of our model: the concepts involved, their relationships, and an initial "marking" (i.e. PlayerA-1 PlayerB-0) that indicates who's serving when a new game starts.
 
 ## Using the Custom Simulation Visualizer and Classification Plugin
+
+1. To simulate the model that you are building, double click your model in the Object browser on the right and then click on the `SimViz` visualizer in the visualizer option list on the left. Below is an example of what you should see using my `PingPong` model.
+   1. ![simviz visualizer for ping pong model](img/simviz-pingpong.jpg)
