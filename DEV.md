@@ -97,9 +97,9 @@ I didn't create my own custom decorator, and instead just used the SVG Decoratio
 
 Below is an outline of the specific decorations that were implemented to achieve the requirements.
 
-- [Places](petri-net/src/decorators/PetriNetDecorator/Icons/Place.svg) are circles containing <MARKING> tokens. SVG Decorator used with [EJS](https://ejs.co) to dynamically render up to 12 "token" discs (where the number of discs is the marking for the place) inside of a Place circle. When the marking of a place exceeds 12, it just prints a number inside the place circle. Token disc color can be customized with the `tokenColor` attribute of each place. Default is black.
-- [Transitions](petri-net/src/decorators/PetriNetDecorator/Icons/Transition.svg) are squares, created with SVG decorator. No EJS necessary since nothing needs to be dynamically rendered.
-- [Petri Nets](petri-net/src/decorators/PetriNetDecorator/Icons/PetriNet.svg) are decorated with a network icon supplemented with a textual description of the initial marking formatted as follows:
+- [Places](petri-net/src/SVG_EJS/Place.svg) are circles containing <MARKING> tokens. SVG Decorator used with [EJS](https://ejs.co) to dynamically render up to 12 "token" discs (where the number of discs is the marking for the place) inside of a Place circle. When the marking of a place exceeds 12, it just prints a number inside the place circle. Token disc color can be customized with the `tokenColor` attribute of each place. Default is black.
+- [Transitions](petri-net/src/SVG_EJS/Transition.svg) are squares, created with SVG decorator. No EJS necessary since nothing needs to be dynamically rendered.
+- [Petri Nets](petri-net/src/SVG_EJS/PetriNet.svg) are decorated with a network icon supplemented with a textual description of the initial marking formatted as follows:
 
 ```
 M: placeName-marking otherPlaceName-otherMarking ... finalPlaceName-finalMarking

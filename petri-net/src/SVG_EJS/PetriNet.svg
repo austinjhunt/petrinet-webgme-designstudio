@@ -1,0 +1,235 @@
+<% 
+    let childrenIds;
+    try{
+        childrenIds = getChildrenIds();
+    } catch (e){
+        childrenIds = [];
+        console.log(e);
+    } 
+
+    let getMetaName = (node) => {
+        let metaTypeId = node.getMetaTypeId();
+        return getNode(metaTypeId).getAttribute('name');
+    }
+
+    let getArcPointerNodeId = (arc, pointerName) => {
+        // return id of node being pointed at where pointerName is either 'src' or 'dst'
+        let pointerId = arc.getPointerId(pointerName);
+        return pointerId;
+    };
+
+    let getArcs = (metaName) => {
+        // metaName = 'ArcPlaceToTransition' or 'ArcTransitionToPlace'
+        let arcs = [];
+        childrenIds.forEach((id, i) => {
+            let node = getNode(id);
+            if (getMetaName(node) === metaName) {
+                arcs.push({
+                    'src': getArcPointerNodeId(node, 'src'),
+                    'dst': getArcPointerNodeId(node, 'dst')
+                });
+            }
+        });
+        return arcs;
+    }
+
+    let getPlacesIds = () => {
+        // get the ids of places from the children
+        let places = [];
+        childrenIds.forEach((id, i) => {
+            let node = getNode(id);
+            if (getMetaName(node) === 'Place'){
+                places.push(id);
+            }
+        });
+        return places;
+    }
+
+    let getTransitionsIds = () => {
+        // get the ids of transitions from the children
+        let transitions = [];
+        childrenIds.forEach((id, i) => {
+            let node = getNode(id);
+            if (getMetaName(node) === 'Transition'){
+                transitions.push(id);
+            }
+        });
+        return transitions;
+    }
+
+    let transitionIds = getTransitionsIds();
+    let placeIds = getPlacesIds();
+    let arcsTransitionToPlace = getArcs('ArcTransitionToPlace');
+    let arcsPlaceToTransition = getArcs('ArcPlaceToTransition');
+
+    let getOutFlowFromPlaceToTransition = (placeId, transitionId) => {
+        // return true if arc from placeId to transitionId else false
+        return arcsPlaceToTransition.some((arc, index) => {
+            return (arc.src === placeId && arc.dst === transitionId)
+        });
+    }
+    let getInFlowToPlaceFromTransition = (placeId, transitionId) => {
+        // return true if arc to placeId from transitionId else false
+        return arcsTransitionToPlace.some((arc, index) => {
+            return (arc.src === transitionId && arc.dst === placeId)
+        });
+    } 
+    let getInputMatrix = () => {
+        // build object representing in flow to each place from each transition e.g. {'place1': {'trans1id': 0, 'trans2id': 1, 'trans3id': 0}, ...}
+        let inputMatrix = {};
+        placeIds.forEach((pid, i) => {
+            inputMatrix[pid] = {};
+                transitionIds.forEach((tid, j) => {
+                inputMatrix[pid][tid] = getInFlowToPlaceFromTransition(pid, tid);
+            });
+        });
+        return inputMatrix;
+    }
+
+    let placeHasNoFlow = (matrix, placeId) => {
+        // obj is either input or output matrix
+        // return true if all of the values for the corresponding transitions are false
+        return Object.entries(matrix[placeId]).every((arr, index) => {return !arr[1]})
+    }
+
+    let getStartingPlaceId = () => {
+        // the first place is the place with no in flow and only out flow.
+        let inputMatrix = getInputMatrix();
+        for (const placeId in inputMatrix){
+            if (placeHasNoFlow(inputMatrix, placeId)) {
+                return placeId;
+            }
+        }
+        // if there is no place with no inflow, then use any of the places as starting point
+        for (const placeId in inputMatrix) {
+            return placeId;
+        }
+    }
+
+
+    let getPlaceMarking = (placeId) => {
+        return parseInt(getNode(placeId).getAttribute('currentMarking'));
+    } 
+    let getNextPlacesFromCurrentPlace = (placeId) => {
+        // allow for ordered traversal of places
+        // next place is a place that is the destination of an ArcTransitionToPlace whose src is a Transition that is the dst of a ArcPlaceToTransition with src = placeId
+        let nextPlaces = []; // array of next places
+        // get the place to transition arcs whose src is placeid; store in array, could be multiple outflow
+        let outFlowArcs = arcsPlaceToTransition.filter(arc => arc.src === placeId);
+        // now for each of those arcs (arc_i), use map on global arcsTransitionToPlace
+        // to get the places that are dst of arc_i whose src is arc.dst
+        outFlowArcs.forEach(arc_p2t => {
+            nextPlaces.push(...arcsTransitionToPlace.filter(
+                arc_t2p => arc_t2p.src === arc_p2t.dst
+                ).map(arc_t2p => {
+                    // do not include already traversed in case of loops
+                    if (arc_t2p.src === arc_p2t.dst) {
+                        return arc_t2p.dst;
+                    }
+                })
+            );
+        })
+        return nextPlaces;
+    }
+
+    let buildMarkingArray = () => { 
+        try{
+            let arr = []; 
+            let startingPlaceId = getStartingPlaceId(); 
+            let traversedPlaceIds = [startingPlaceId];
+            arr.push({
+                'placeId': startingPlaceId,
+                'placeName': getNode(startingPlaceId).getAttribute('name'),
+                'placeMarking': getPlaceMarking(startingPlaceId)
+            })
+            let nextPlaces = getNextPlacesFromCurrentPlace(startingPlaceId);
+            while (nextPlaces.length > 0){
+                let placeId = nextPlaces.shift();
+                if (!traversedPlaceIds.includes(placeId)) {
+                traversedPlaceIds.push(placeId);
+                arr.push({
+                    'placeId': placeId,
+                    'placeName': getNode(placeId).getAttribute('name'),
+                    'placeMarking': getPlaceMarking(placeId)
+                });
+                nextPlaces.push(...getNextPlacesFromCurrentPlace(placeId));
+                }
+            } 
+            // remove duplicate places in cases where you have multiple paths leading to same place.
+        
+            return arr.filter((place, index, self) =>
+                index === self.findIndex((place2) => (
+                    place2.placeId === place.placeId
+                ))
+            );  
+        } catch (e) {console.log(e); console.log('returning empty array');return []}
+    } 
+    let markingArray = buildMarkingArray();  
+    if (markingArray.length > 0) { 
+        let counter = 0;
+        let yOffset = 0;
+        let ypos = markingArray.length == 0 ? 90 : 77;
+        let xpos =  30 / (1+markingArray.length);
+        let fontSize = 6; // rem
+        let maxPlacesPerRow = 4;
+        let fullText = "M: "; // use fullText of each item to determine x pos of the following item
+        let totalRowLength = 0;
+
+        let defaultViewBoxWidth=1487;
+        let defaultViewBoxHeight=1052;
+
+        let vbw = defaultViewBoxWidth + (100*markingArray.length);
+        let vbh = defaultViewBoxHeight + (20*markingArray.length);
+        let w = markingArray.length == 0 ? 200 : 400;
+        let h = markingArray.length == 0 ? 150 : 160; 
+        %>
+ 
+        <svg width="<%= w %>" height="<%= h %>" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 <%= vbw %> <%= vbh %>">
+            <title>Petri Net</title> 
+            <metadata id="metadata4057">image/svg+xml</metadata>
+            <g>
+                <g id="svg_1">
+                    <path fill="#ffffff" stroke="#000000" stroke-width="5" stroke-miterlimit="4" id="path4214" d="m737.946533,319.269592c0,48.815552 -39.572815,88.388336 -88.388367,88.388336c-48.815491,0 -88.388367,-39.572784 -88.388367,-88.388336c0,-48.815552 39.572876,-88.388351 88.388367,-88.388351c48.815552,0 88.388367,39.5728 88.388367,88.388351z"/>
+                    <path fill="#ffffff" stroke="#000000" stroke-width="5" stroke-miterlimit="4" id="path4214-8" d="m1142.367554,418.396576c0,48.815552 -39.572754,88.388336 -88.388306,88.388336c-48.815552,0 -88.388367,-39.572784 -88.388367,-88.388336c0,-48.815552 39.572815,-88.388336 88.388367,-88.388336c48.815552,0 88.388306,39.572784 88.388306,88.388336z"/>
+                    <path fill="#ffffff" stroke="#ff5500" stroke-width="5" stroke-miterlimit="4" id="path4214-8-8" d="m837.448547,707.607605c0,48.815552 -39.572815,88.388306 -88.388367,88.388306c-48.815552,0 -88.388306,-39.572754 -88.388306,-88.388306c0,-48.815552 39.572754,-88.388367 88.388306,-88.388367c48.815552,0 88.388367,39.572815 88.388367,88.388367z"/>
+                    <path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-miterlimit="4" id="path6470" d="m744.194763,348.845795l210.884277,49.183594"/>
+                    <path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-miterlimit="4" id="path6474" d="m666.926636,416.646393l57.083008,194.657196"/>
+                </g> 
+                <g style="border-bottom: black">
+                    <text style="white-space: normal;  font-size: <%= fontSize %>rem; font-weight:bold;" y="<%= ypos %>%" x="<%= xpos %>%" >
+                        <%= fullText %>
+                    </text>
+                    <%
+                    markingArray.forEach((place, index) => {
+                        if (counter >= maxPlacesPerRow){
+                            counter = 0; totalRowLength = 0; yOffset += 10;
+                        }
+                        fullText = `${place.placeName}-${place.placeMarking}` ;
+
+                    %>
+                        <text y="<%= ypos + yOffset %>%" x="<%= (xpos + totalRowLength + 8)  %>%" style="white-space: normal; font-weight:bold; font-size: <%= fontSize %>rem;%>">
+                            <%
+                            totalRowLength += fullText.length + 8;
+                            %>
+                            <%= fullText %>
+                        </text>
+                    <% counter ++; }) %>
+                </g>    
+            </g> 
+        </svg>
+    <% } else {   %> 
+        <svg width="150" height="150" xmlns="http://www.w3.org/2000/svg" viewBox="360 160 900 800">
+            <title>Petri Net</title> 
+            <metadata id="metadata4057">image/svg+xml</metadata>
+            <g>
+                <g id="svg_1">
+                    <path fill="#ffffff" stroke="#000000" stroke-width="5" stroke-miterlimit="4" id="path4214" d="m737.946533,319.269592c0,48.815552 -39.572815,88.388336 -88.388367,88.388336c-48.815491,0 -88.388367,-39.572784 -88.388367,-88.388336c0,-48.815552 39.572876,-88.388351 88.388367,-88.388351c48.815552,0 88.388367,39.5728 88.388367,88.388351z"/>
+                    <path fill="#ffffff" stroke="#000000" stroke-width="5" stroke-miterlimit="4" id="path4214-8" d="m1142.367554,418.396576c0,48.815552 -39.572754,88.388336 -88.388306,88.388336c-48.815552,0 -88.388367,-39.572784 -88.388367,-88.388336c0,-48.815552 39.572815,-88.388336 88.388367,-88.388336c48.815552,0 88.388306,39.572784 88.388306,88.388336z"/>
+                    <path fill="#ffffff" stroke="#ff5500" stroke-width="5" stroke-miterlimit="4" id="path4214-8-8" d="m837.448547,707.607605c0,48.815552 -39.572815,88.388306 -88.388367,88.388306c-48.815552,0 -88.388306,-39.572754 -88.388306,-88.388306c0,-48.815552 39.572754,-88.388367 88.388306,-88.388367c48.815552,0 88.388367,39.572815 88.388367,88.388367z"/>
+                    <path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-miterlimit="4" id="path6470" d="m744.194763,348.845795l210.884277,49.183594"/>
+                    <path fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round" stroke-miterlimit="4" id="path6474" d="m666.926636,416.646393l57.083008,194.657196"/>
+                </g> 
+            <text style="font-size: 6rem; font-weight: bold" y="900" x="600" >M: (empty)</text>
+            </g>    
+        </svg> 
+<% } %>

@@ -3,10 +3,7 @@
 "use strict";
 
 var config = require("webgme/config/config.default"),
-  validateConfig = require("webgme/config/validator");
-
-// The paths can be loaded from the webgme-setup.json
-config.visualization.decoratorPaths.push(__dirname + "/../src/decorators");
+  validateConfig = require("webgme/config/validator"); 
 
 config.visualization.panelPaths.push(__dirname + "/../src/visualizers/panels");
 // visualizer descriptors

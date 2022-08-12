@@ -2,15 +2,7 @@
   "components": {
     "seeds": {
       "PetriNetProjectSeed": "src/seeds/PetriNetProjectSeed"
-    },
-    "decorators": {
-      "PlaceDecorator": {
-        "src": "src/decorators/PlaceDecorator"
-      },
-      "PetriNetDecorator": {
-        "src": "src/decorators/PetriNetDecorator"
-      }
-    },
+    }, 
     "visualizers": {
       "SimViz": {
         "src": "visualizers/panels/SimViz/SimVizPanel",

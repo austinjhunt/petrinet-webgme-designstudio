@@ -1,6 +1,42 @@
 # Petri Net Design Studio
 
-This is a project focused on creating a design studio with special attention to the domain of [Petri Nets](https://en.wikipedia.org/wiki/Petri_net), one of several mathematical modeling languages for describing (modeling) distributed systems. In this project, I use [NodeJS](https://nodejs.org/en/), [JointJS](https://resources.jointjs.com), and [WebGME](https://webgme.readthedocs.io/) to create a custom design studio that not only allows for modeling Petri Net structure (i.e. relationships between the concepts of transitions, places, and arcs), but also for modeling Petri Net behavior via a custom simulation visualizer built with [JointJS.](https://www.jointjs.com/), as well as for classifying instances of Petri Net models as `Marked Graphs`, `Workflows`, `State Machines`, and `Free Choice nets` which each have signature characteristics.
+This is a project focused on creating a design studio with special attention to the domain of [Petri Nets](https://en.wikipedia.org/wiki/Petri_net), one of several mathematical modeling languages for describing (modeling) distributed systems. This was completed for CS 6388: Model-Integrated Computing at [Vanderbilt University](https://www.vanderbilt.edu/) taught by [Tamas Kecskes](https://engineering.vanderbilt.edu/bio/tamas-kecskes). The original assignment description is included in the repository in the [ASSIGNMENT_6388_MIC.pdf file](ASSIGNMENT_6388_MIC.pdf). In this project, I use [NodeJS](https://nodejs.org/en/), [JointJS](https://resources.jointjs.com), [EJS](https://ejs.co/), and [WebGME](https://webgme.readthedocs.io/) to create a custom design studio that not only allows for modeling distributed system **structure** with Petri Nets, but also for modeling distributed system **behavior** via a custom Petri Net simulation visualizer built with [JointJS.](https://www.jointjs.com/), as well as for classifying instances of Petri Net models as `Marked Graphs`, `Workflows`, `State Machines`, and `Free Choice nets` which each have signature characteristics.
+
+<div style="text-align:center">
+<img src="img/vandy-eng.jpg" style="width: 60%; margin: 1rem auto;">
+</div>
+
+- [Petri Net Design Studio](#petri-net-design-studio)
+  - [Screenshot of Design Studio Simulation Visualizer:](#screenshot-of-design-studio-simulation-visualizer)
+  - [The Petri (**P**lace/**Tr**ansition) Net Domain](#the-petri-placetransition-net-domain)
+    - [Bipartite?](#bipartite)
+    - [Concepts](#concepts)
+      - [Places](#places)
+        - [What's a marking?](#whats-a-marking)
+      - [Transitions](#transitions)
+        - [Firing One Transition vs. Firing All Transitions](#firing-one-transition-vs-firing-all-transitions)
+        - [What if all of the transitions become disabled? DEADLOCK](#what-if-all-of-the-transitions-become-disabled-deadlock)
+      - [Arcs](#arcs)
+        - [ArcTransitionToPlace](#arctransitiontoplace)
+        - [ArcPlaceToTransition](#arcplacetotransition)
+  - [Petri Net Classes](#petri-net-classes)
+    - [Free Choice Petri Nets](#free-choice-petri-nets)
+    - [State Machine Petri Nets](#state-machine-petri-nets)
+    - [Marked Graph Petri Nets](#marked-graph-petri-nets)
+    - [Workflow Petri Net](#workflow-petri-net)
+  - [Use Cases of Petri Nets](#use-cases-of-petri-nets)
+    - [Supply Chain Management :department_store:](#supply-chain-management-department_store)
+      - [Example: Supply Chain Management Model (found in the Real World Examples Petri Net container)](#example-supply-chain-management-model-found-in-the-real-world-examples-petri-net-container)
+    - [Biology :thinking: :microscope: :test_tube:](#biology-thinking-microscope-test_tube)
+      - [Example: Glycolysis & Krebs/Citric Acid Cycle Model](#example-glycolysis--krebscitric-acid-cycle-model)
+  - [Installation](#installation)
+    - [MacOS (tested on MacOS Catalina 10.15.7)](#macos-tested-on-macos-catalina-10157)
+    - [Windows (instructions tested on Windows 11 machine)](#windows-instructions-tested-on-windows-11-machine)
+    - [OS-agnostic instructions now that your server is running :sunglasses: :nerd_face:](#os-agnostic-instructions-now-that-your-server-is-running-sunglasses-nerd_face)
+  - [Start Modeling](#start-modeling)
+  - [Using the Custom Simulation Visualizer and Classification Plugin](#using-the-custom-simulation-visualizer-and-classification-plugin)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 ## Screenshot of Design Studio Simulation Visualizer:
 
@@ -244,5 +280,10 @@ You've now created your own project within the design studio! So **how do you cr
 5. If there are transitions that are enabled, you should see two additional buttons:
    1. `Fire a specific enabled transition`. Clicking this opens a dropdown menu with a list of the transitions currently enabled (with all in places having at least one token). You can click any of these transitions to fire them specifically, i.e. decrement their in places by one token and increment their out places by one token.
    2. `Fire all enabled transitions`. Clicking this will actually fire all of the transitions that are currently enabled simultaneously. There is a logical error in this simultaneous firing option outlined in [DEV.md](DEV.md) which is why I plan to either remove it as a button or replace it with interleaved random firing of all enabled transitions. That is, if 3 transitions are enabled and you fire them all, they fire sequentially in a random order rather than all at once which produces inconsistencies in token values.
+
+https://user-images.githubusercontent.com/31296526/184453609-4246a55e-79f5-4cd9-ab1c-d67868a0e25c.mp4
+
+Above is a demo of the two types of transition firing. Note: with only the one token circulating, only one transition is ever enabled at a given time, so firing all essentially does the same thing as firing one.
+
 6. If there are no transitions enabled/fireable, you are not provided the option of firing any transitions (single or all). Instead, you should see a `DEADLOCK` label in place of the buttons. Also, any time your model reaches a deadlock state where all transitions are disabled, you should receive a notification in the bottom right notifications widget indicating that it has reached a deadlock state. An example is given below, produced by setting the token value to 0 for both players in the ping pong game. You can't play ping pong with no ball. Sad day.
    1. ![deadlock example - ping pong with no ball](img/deadlock.jpg)
