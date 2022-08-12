@@ -184,5 +184,16 @@ git clone https://github.com/austinjhunt/petrinet-webgme-designstudio
 You've now created your own project within the design studio! So **how do you create a model?**
 
 1. First things first, think of something you want to model. I'm going to create a model of a game of Ping Pong as a fun little example to demonstrate creating a model.
+2. Let's make sure we're in the right visualizer. Double click the `ROOT` on the Composition object browser on the right. This sets the context to the root object.
+   1. ![double click the ROOT object](img/double-click-root.jpg)
+3. Then click the `Composition` visualizer option on the left to make sure you're in the `Composition visualizer`.
+   1. ![composition visualizer for root](img/composition-visualizer.jpg)
+4. Click and drag a `PetriNetContainer` into your main composition view.
+   1. ![create petrinet container](img/create-petrinetcontainer.jpg)
+5. Double click the title of the PetriNetContainer you just added and change it to something like `MyExamples`:
+   1. ![change title of petrinet container](img/change-container-title.jpg)
+6. Now double click the icon for the container to open it up. We're now in the Composition visualizer of the `MyExamples` container.
+   1. ![my examples composition](img/myexamples-composition.jpg)
+7. Within this container, let's create our first petri net model instance. I'm going to call mine 'PingPong'. Drag in a PetriNet into your composition visualizer from the component selector on the left, similar to how you created the container.
 
 ## Using the Custom Simulation Visualizer and Classification Plugin
