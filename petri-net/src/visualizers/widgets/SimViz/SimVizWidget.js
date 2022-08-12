@@ -417,19 +417,6 @@ define(["jointjs", "css!./styles/SimVizWidget.css"], function (joint) {
       cellViewNamespace: namespace,
     });
 
-    // add event calls to elements
-    self._jointPaper.on("element:pointerdblclick", function (elementView) {
-      //FIXME: current should be current marking, representative of all places in PN.
-      // const currentElement = elementView.model;
-      // if (self._webgmePetriNet) {
-      //   self._setCurrentState(self._webgmePetriNet.id2state[currentElement.id]);
-      // }
-      // set current marking maybe?
-    });
-
-    // Create a dummy header
-    self._el.append("<h3>SimViz Events:</h3>");
-
     // Registering to events can be done with jQuery (as normal)
     self._el.on("dblclick", function (event) {
       event.stopPropagation();

@@ -85,6 +85,26 @@ As you might guess, Arcs of this type are arcs starting at a transition and endi
 
 As you might guess, Arcs of this type are arcs starting at a place and ending at a transition.
 
+## Petri Net Classes
+
+The following is an outline of the main classes that a Petri Net model can belong to, with descriptions of their respective criteria. These are the classes whose criteria the [PetriNetClassifier plugin](petri-net\src\plugins\PetriNetClassifier\PetriNetClassifier.js) is checking in order to return notifications that indicate the class(es) of a given petri net model.
+
+### Free Choice Petri Nets
+
+In order for a petri net to be considered **free choice**, each transition in the net must have its own unique set of inplaces. No two separate, distinct transitions should share an in place. If an inplace is shared by any two distinct transitions, the petri net is not free choice.
+
+### State Machine Petri Nets
+
+A petri net is a **state machine** if every transition has exactly one inplace and one outplace.
+
+### Marked Graph Petri Nets
+
+A petri net is a **marked graph** if every place has exactly one out transition and one in transition.
+
+### Workflow Petri Net
+
+A petri net is a **workflow net** if it has exactly one source place s where s has no in transitions, one sink place o where o has no out transitions, and every place or transition within the net is on a path from s to o.
+
 ## Use Cases of Petri Nets
 
 Petri Nets can be used to model behavior of any dynamic distributed system in which you have some sort of quantifiable thing or property that is moving around and changing on the nodes within that system. While they definitely seem like they might be exclusive to the technical domain and used to model things like electrical signals or something else equally complex (they could be), Petri Nets can be used in non-technical domains as well. Sounds a bit general, I know, so below I've itemized a few use cases.
@@ -206,8 +226,23 @@ You've now created your own project within the design studio! So **how do you cr
     4. Since in a ping pong game each player hits the ball, then it bounces before reaching the next player, I can name the arcs before and after each transition as respectively `hit` and `bounce`. Also, I know there is only one ball in the game, and I can represent that ball as one token that simply moves between each of the players at each "round" or "fire". So, I can click on PlayerA, open its attribute editor on the right, and set its token value attribute (`currentMarking`) to 1 to indicate that Player A is initially serving the ball.
        1. ![player A token value - serving the ball](img/player-a-token.jpg)
 11. Now that I've build the structure of the game, I can simulate it. I'll discuss simulation in detail in the next section. Note that right now all we've defined really is the initial structure of our model: the concepts involved, their relationships, and an initial "marking" (i.e. PlayerA-1 PlayerB-0) that indicates who's serving when a new game starts.
+12. One last thing: by default all Petri Net models (according to a requirement enforced by my metamodel) contain at least one piece of editable documentation in the Composition visualizer to encourage you to provide a description of your model and what it represents. Here is my documentation after editing it for the Ping Pong model:
+    1. ![ping pong composition documentation](img/pingpong-docs.jpg)
 
 ## Using the Custom Simulation Visualizer and Classification Plugin
 
 1. To simulate the model that you are building, double click your model in the Object browser on the right and then click on the `SimViz` visualizer in the visualizer option list on the left. Below is an example of what you should see using my `PingPong` model.
    1. ![simviz visualizer for ping pong model](img/simviz-pingpong.jpg)
+2. Notice that the enabled transition (the one whose _inplace_ has the token) is green and pulsating (and labeled with `ENABLED:`) and the disabled transition is grey and static (and labeled with `DISABLED:`).
+3. In the top toolbar, as shown in the above screenshot, you should see a `Classify!` button with a question mark icon. If you click this, you will receive one or more notifications in the bottom right notifications widget. Each notification will indicate a class of Petri Net that your model belongs to based on the criteria outlined in the above **Petri Net Classes** section.
+   1. ![classes notifications](img/classes.jpg)
+   2. In my example, I receive three notifications; my model is:
+      1. A free choice net since both transitions have their own unique in place
+      2. A marked graph since both places have exactly one in transition and one out transition, and
+      3. A state machine since both transitions have exactly one inplace and one outplace.
+4. You should also see a `Reset Simulator` button with a reset icon. Clicking this resets the visualization back to the initial marking (i.e. the initial number of tokens at each place as indicated in the attribute editor of the composition view) and redecorates the enabled/disabled statuses of the transitions based on that initial marking.
+5. If there are transitions that are enabled, you should see two additional buttons:
+   1. `Fire a specific enabled transition`. Clicking this opens a dropdown menu with a list of the transitions currently enabled (with all in places having at least one token). You can click any of these transitions to fire them specifically, i.e. decrement their in places by one token and increment their out places by one token.
+   2. `Fire all enabled transitions`. Clicking this will actually fire all of the transitions that are currently enabled simultaneously. There is a logical error in this simultaneous firing option outlined in [DEV.md](DEV.md) which is why I plan to either remove it as a button or replace it with interleaved random firing of all enabled transitions. That is, if 3 transitions are enabled and you fire them all, they fire sequentially in a random order rather than all at once which produces inconsistencies in token values.
+6. If there are no transitions enabled/fireable, you are not provided the option of firing any transitions (single or all). Instead, you should see a `DEADLOCK` label in place of the buttons. Also, any time your model reaches a deadlock state where all transitions are disabled, you should receive a notification in the bottom right notifications widget indicating that it has reached a deadlock state. An example is given below, produced by setting the token value to 0 for both players in the ping pong game. You can't play ping pong with no ball. Sad day.
+   1. ![deadlock example - ping pong with no ball](img/deadlock.jpg)
