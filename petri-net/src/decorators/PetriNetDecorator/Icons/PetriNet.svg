@@ -1,6 +1,12 @@
 
    <%
-    	let childrenIds = getChildrenIds();
+    let childrenIds;
+    	try{
+            childrenIds = getChildrenIds();
+        } catch (e){
+            childrenIds = [];
+            console.log(e);
+        }
         let getMetaName = (node) => {
             let metaTypeId = node.getMetaTypeId();
             return getNode(metaTypeId).getAttribute('name');
@@ -9,7 +15,6 @@
         let getArcPointerNodeId = (arc, pointerName) => {
             // return id of node being pointed at where pointerName is either 'src' or 'dst'
         	let pointerId = arc.getPointerId(pointerName);
-            console.log(`pointerid: ${pointerId}`)
             return pointerId;
         };
 
@@ -173,6 +178,9 @@
            } catch (e) {return []}
         }
         let markingArray = buildMarkingArray();
+        console.log('markingArray');
+        console.log(markingArray);
+        if (!markingArray){markingArray = []}
     %>
 
     <%
