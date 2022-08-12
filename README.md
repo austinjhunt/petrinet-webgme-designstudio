@@ -109,6 +109,18 @@ The below is an image pulled from the work of [Oyelade et. al](https://ieeexplor
 
 ![glycolysis in falciparum parasite](img/malaria-glycolysis.png)
 
+#### Example: Glycolysis & Krebs Cycle Model
+
+### Krebs / Citric Acid Cycle
+
+In this example I have illustrated (quite abstractly) how a Petri Net can be used to model the Krebs or citric acid cycle, which is a series of reactions that takes in acetyl CoA and produces carbon dioxide, NADH, FADH2, and ATP or GTP. I put this together by referencing [this Khan Academy video on the Krebs cycle](https://www.khanacademy.org/science/biology/cellular-respiration-and-fermentation/pyruvate-oxidation-and-the-citric-acid-cycle/v/krebs-citric-acid-cycle).
+
+In this case, I've used transitions to represent reactions like pyruvate oxidation of the two pyruvic acids produced by glycolysis, the merging of acetyl CoA with oxaloacetic acid, and the oxidation of citric acid. I've used places to represent molecules, in a way that allows me to represent the necessity of a molecule for the occurrence of a chemical reaction. For example, both acetyl CoA and oxaloacetic acid are necessary molecules / reactants for the beginning of the krebs / citric acid cycle because it requires their merging. The petri net allows me to model that since transitions require all inplaces of a given transition (reaction) to have at least one token (i.e. be present and ready to react) in order to fire (react/take place).
+
+Note that I did give an initial token value of 1 to both oxaloacetic acids, otherwise the petri net reaches a deadlock after the firing of both pyruvateOxidation reactions. This feels like a "chicken or the egg" problem; if the krebs cycle is indeed a cycle and it requires what it produces in order to start over, then shouldn't that required reactant be present at the beginning prior to the cycle taking place? That's the assumption I am working with! Fun stuff.
+
+Also note that I arbitrarily initialized 5 glucose molecules which allows for 5 executions of the full krebs cycle before reaching a deadlock, because the acetyl CoA that comes from the glucose source is, again, one of the two requirements for the beginning of the krebs cycle.
+
 You finally have to create documentation to your design studio. It can be as simple as a readme.md file in the repository, but it has to clarify the following things for the user:
 ● What is the domain about
 ● A few sentence on the typical use-cases of the domain
