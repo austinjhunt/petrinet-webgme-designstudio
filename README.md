@@ -135,25 +135,60 @@ git clone https://github.com/austinjhunt/petrinet-webgme-designstudio
 
 2. Navigate into the root project directory, e.g. `cd petrinet-webgme-designstudio`
 3. Install [NVM](https://github.com/nvm-sh/nvm), **a convenient version manager for NodeJS**, if you don't already have it installed.
+
+### MacOS (tested on MacOS Catalina 10.15.7)
+
 4. Using NVM, install and activate Node JS v18.0.0
    1. `nvm install 18 && nvm use 18`
 5. Update NPM to latest version 8.15.1 (might not be necessary to run this project but it's generally good to stay up to date)
    1. `npm install -g npm@8.15.1`
+6. Install [MongoDB](https://www.mongodb.com/).
+   1. **This project will not work with new versions of Mongo - at least, it didn't on MacOS Catalina**. You need a version **before 5.0** which deprecated the use of `OP_QUERY command: find.`
+   2. To install MongoDB easily on MacOS, you should install the [Homebrew package manager.](https://brew.sh/). Then you can install MongoDB Community 4.4 using homebrew on MacOS with `brew install mongodb-community@4.4`
+7. Install `webgme-cli` as a global npm module: `npm install -g webgme-cli`
+8. Navigate into the `petri-net` directory and install all of the necessary packages with `npm install` or shortened, `npm i`
+9. Within the `petri-net` directory, start the project with `webgme start`. If that does not work you can also try starting the project with `npm start` from within that directory.
+10. Skip ahead now to the OS-agnostic instructions
+
+### Windows (instructions tested on Windows 11 machine)
+
+4. Using NVM, install and activate Node JS v16.13.2. (Later versions of NodeJS cause [this issue](https://github.com/npm/cli/issues/4234) on Windows)
+   1. `nvm install 16.13.2 && nvm use 16.13.2`
+5. Update NPM to latest version 8.15.1 (might not be necessary to run this project but it's generally good to stay up to date)
+   1. `npm install -g npm@8.15.1`
 6. Install [MongoDB](https://www.mongodb.com/)
 
-   1. **This project will not work with new versions of Mongo - at least, it didn't on MacOS Catalina**. You need a version **before 5.0** which deprecated the use of OP_QUERY command: find.
-   2. If you are on MacOS, you should install the [Homebrew package manager.](https://brew.sh/). Then you can install MongoDB Community 4.4 using homebrew on MacOS with `brew install mongodb-community@4.4`
-   3. Alternatively if you are on Windows, here is a MongoDB 4.4.16 release download link that you can use to download and install MongoDB 4.4: [https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi](https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi)
+   1. Here is a MongoDB 4.4.16 release download link that you can use to download and install MongoDB 4.4: [https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi](https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi)
+   2. Install and run MongoDB as a service using that `.msi` file once you download it.
+   3. `npm start`. Allow access if this triggers a pop up.
 
 7. Install `webgme-cli` as a global npm module: `npm install -g webgme-cli`
 8. Navigate into the `petri-net` directory and install all of the necessary packages with `npm install` or shortened, `npm i`
-9. Navigate to the `petri-net` folder (i.e. `cd ./petri-net` from the root project directory) and start the project with `webgme start`. If that does not work you can also try starting the project with `npm start` from within that directory.
+9. Within the `petri-net` directory, start the project with `npm start`. You may try `webgme start` as well but that webgme CLI command failed for me on Windows 11.
+10. Skip ahead now to the OS-agnostic instructions
 
-10. Install Mongo DB.
-    You finally have to create documentation to your design studio. It can be as simple as a readme.md file in the repository, but it has to clarify the following things for the user:
-    ● What is the domain about
-    ● A few sentence on the typical use-cases of the domain
-    ● How to install the design studio
-    ● How to start modeling once the studio is installed
-    ● Once a network is build, what feature your studio provides and how can the user use
-    those functions
+### OS-agnostic instructions now that your server is running :sunglasses: :nerd_face:
+
+10. Navigate to [`http://localhost:8080`](http://localhost:8080)
+11. Create a new project by typing your desired project name in the Project Name input field.
+    ![new project](img/new-project.png)
+12. Choose `PetriNetSeed` as the seed in the `Choose an existing seed` dropdown. Click create.
+    ![project seed](img/project-seed.png)
+13. You should now see a screen that looks like this. This is the Composition visualization of the ROOT component.
+    ![new project ROOT composition view](img/root-composition-view.png)
+    The ROOT component basically wraps up everything including the PetriNet metamodel and the specific example model instances that are contained in the `Basic Examples` and `Real Word Examples` PetriNetContainers.
+
+## Start Modeling
+
+You've now created your own project within the design studio! So **how do you create a model?**
+
+1. First things first, think of something you want to model. I'm going to create a model of a game of Ping Pong as a fun little example to demonstrate creating a model.
+2.
+
+3. You finally have to create documentation to your design studio. It can be as simple as a readme.md file in the repository, but it has to clarify the following things for the user:
+   ● What is the domain about
+   ● A few sentence on the typical use-cases of the domain
+   ● How to install the design studio
+   ● How to start modeling once the studio is installed
+   ● Once a network is build, what feature your studio provides and how can the user use
+   those functions
