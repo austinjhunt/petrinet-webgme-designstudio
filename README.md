@@ -48,9 +48,9 @@ A **marking** of a Petri Net is simply a function mapping each Place in the Petr
 M: <PlaceName>-<initial token value> ... for each place
 ```
 
-You will notice that when you are creating your own Petri Net model instance, each Place that you add has an attribute in the Composition view called **currentMarking**, which is just an integer indicating how many tokens are **initially** stored in that place. (my intention is to update the attribute name "`currentMarking`" to "`initialMarking`" to more accurately reflect this).
+You will notice that when you are creating your own Petri Net model instance, each Place that you add has an attribute in the Composition view called **currentMarking**, which is just an integer indicating how many tokens are **initially** stored in that place. (my intention as indicated in [TODO.md](TODO.md) is to update the attribute name "`currentMarking`" to "`initialTokens`" to more accurately reflect this).
 
-In the beginning of this README, I mentioned that "activity" is represented with tokens, which was intentionally very general. Since a Petri Net can be used to model a wide variety of real-world distributed systems, you can think of tokens as representing any quantifiable _thing_ that may move throughout the "nodes" within that system, such as a property that may be true or false for each node at any given point in time; e.g., if a Place has a token, the property is true, otherwise the property is false. Or, if a Place `Q` representing a message queue has `N` tokens, that could represent `N` queued messages to be sent to a consumer (represented by a different Place `C`) which would be a second hop after one of `Q`'s _outTransitions_, discussed below.
+I mentioned previously that "activity" is represented with tokens, which was intentionally very general. Since a Petri Net can be used to model a wide variety of real-world distributed systems, you can think of tokens as representing any quantifiable _thing_ that may move throughout the "nodes" within that system, such as a property that may be true or false for each node at any given point in time; e.g., if a Place has a token, the property is true, otherwise the property is false. Or, if a Place `Q` representing a message queue has `N` tokens, that could represent `N` queued messages to be sent to a consumer (represented by a different Place `C`) which would be a second hop after one of `Q`'s _outTransitions_, discussed below.
 
 In addition to tokens, each place `P` has its own set of _inTransitions_ and a set of _outTransitions_; while somewhat self-explanatory, _inTransitions_ is the set of Transitions connecting to the Place via an Arc of type ArcTransitionToPlace (i.e., source is transition, destination is the Place `P`), and _outTransitions_ is the set of Transitions to which the Place `P` is connecting via an Arc of type ArcPlaceToTransition (i.e., source is the Place `P`, destination is transition). I will talk about this part more in the Transition section, but if a place `P` has `0` tokens at a given point in time, that implies each of its _outTransitions_ is no longer enabled, or "fireable".
 
@@ -158,9 +158,10 @@ git clone https://github.com/austinjhunt/petrinet-webgme-designstudio
    1. `npm install -g npm@8.15.1`
 6. Install [MongoDB](https://www.mongodb.com/)
 
-   1. Here is a MongoDB 4.4.16 release download link that you can use to download and install MongoDB 4.4: [https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi](https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi)
-   2. Install and run MongoDB as a service using that `.msi` file once you download it.
-   3. `npm start`. Allow access if this triggers a pop up.
+   1. **This project will not work with new versions of Mongo - at least, it didn't on MacOS Catalina**. You need a version **before 5.0** which deprecated the use of `OP_QUERY command: find.`
+   2. Here is a MongoDB 4.4.16 release download link that you can use to download and install MongoDB 4.4: [https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi](https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi)
+   3. Install and run MongoDB as a service using that `.msi` file once you download it.
+   4. `npm start`. Allow access if this triggers a pop up.
 
 7. Install `webgme-cli` as a global npm module: `npm install -g webgme-cli`
 8. Navigate into the `petri-net` directory and install all of the necessary packages with `npm install` or shortened, `npm i`
@@ -183,12 +184,5 @@ git clone https://github.com/austinjhunt/petrinet-webgme-designstudio
 You've now created your own project within the design studio! So **how do you create a model?**
 
 1. First things first, think of something you want to model. I'm going to create a model of a game of Ping Pong as a fun little example to demonstrate creating a model.
-2.
 
-3. You finally have to create documentation to your design studio. It can be as simple as a readme.md file in the repository, but it has to clarify the following things for the user:
-   ● What is the domain about
-   ● A few sentence on the typical use-cases of the domain
-   ● How to install the design studio
-   ● How to start modeling once the studio is installed
-   ● Once a network is build, what feature your studio provides and how can the user use
-   those functions
+## Using the Custom Simulation Visualizer and Classification Plugin
