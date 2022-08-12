@@ -161,11 +161,11 @@ git clone https://github.com/austinjhunt/petrinet-webgme-designstudio
    1. **This project will not work with new versions of Mongo - at least, it didn't on MacOS Catalina**. You need a version **before 5.0** which deprecated the use of `OP_QUERY command: find.`
    2. Here is a MongoDB 4.4.16 release download link that you can use to download and install MongoDB 4.4: [https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi](https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-4.4.16-rc0-signed.msi)
    3. Install and run MongoDB as a service using that `.msi` file once you download it.
-   4. `npm start`. Allow access if this triggers a pop up.
+      1. ![installing mongodb as a service on Windows](img/mongo-db-install-service.jpg)
 
 7. Install `webgme-cli` as a global npm module: `npm install -g webgme-cli`
 8. Navigate into the `petri-net` directory and install all of the necessary packages with `npm install` or shortened, `npm i`
-9. Within the `petri-net` directory, start the project with `npm start`. You may try `webgme start` as well but that webgme CLI command failed for me on Windows 11.
+9. Within the `petri-net` directory, start the project with `npm start`. You may try `webgme start` as well but that webgme CLI command failed for me on Windows 11. Allow access if this triggers a popup.
 10. Skip ahead now to the OS-agnostic instructions
 
 ### OS-agnostic instructions now that your server is running :sunglasses: :nerd_face:
@@ -175,7 +175,7 @@ git clone https://github.com/austinjhunt/petrinet-webgme-designstudio
     ![new project](img/new-project.png)
 12. Choose `PetriNetSeed` as the seed in the `Choose an existing seed` dropdown. Click create.
     ![project seed](img/project-seed.png)
-13. You should now see a screen that looks like this. This is the Composition visualization of the ROOT component.
+13. You should now see a screen that looks like this. If you are working on a smaller screen you may not see the full view; you can either zoom out or scroll horizontally to see all components in the view. This is the Composition visualization of the ROOT component.
     ![new project ROOT composition view](img/root-composition-view.png)
     The ROOT component basically wraps up everything including the PetriNet metamodel and the specific example model instances that are contained in the `Basic Examples` and `Real Word Examples` PetriNetContainers.
 
