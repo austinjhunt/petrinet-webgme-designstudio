@@ -1,12 +1,17 @@
-# Petri Net Design Studio
+# Development Process
 
-This is a project focused on creating a design studio with special attention to the concept of a [Petri Net](https://en.wikipedia.org/wiki/Petri_net), one of several mathematical modeling languages for describing distributed systems. In this project, I use [NodeJS](https://nodejs.org/en/) and [WebGME](https://webgme.readthedocs.io/) heavily to create a custom design studio that not only allows for modeling Petri Net structure (i.e. relations between transitions, places, and arcs), but also for modeling Petri Net behavior via custom simulation visualizers built with [JointJS.](https://www.jointjs.com/)
+I'm including this file for my future self to reference as a reminder of the process of creating the design studio, the visualizer, the decorations, the plugin, the seed, and the petri net metamodel.
 
 ## Seed Project - The Petri Net Metamodel
 
 I first created a project seed from the public WebGME instance we've been using at [https://mic.isis.vanderbilt.edu/](https://mic.isis.vanderbilt.edu/).
 Project seed included foundational architecture of the Petri Net Meta Model. Below are some screenshots of the various views created within the seed project.
 After creating the seed, I exported it via the `master > Export branch` feature in the top nav, stored it within this project such that it could be read in as a seed.
+
+## Building the Metamodel
+
+Below is an outline of the different views you will find in the `Meta` visualizer, where each view focuses on specific concepts and their relationships.
+![views in the meta visualizer of the petri net metamodel](img/views.png)
 
 ### METAView
 
@@ -34,9 +39,9 @@ A view focused on the `PetriNetContainer` concept. A petri net container can con
 
 ## Creating the Seed
 
-To create the seed such that it would show up in the seed choices when creating a new project at `http://localhost:8888`, I took the following steps:
+To create the seed such that it would show up in the seed choices when creating a new project at `http://localhost:8080`, I took the following steps:
 
-1. I created the folder `seeds` within the `src` folder and placed the exported webgmex file in that folder with the name `PetriNetProjectSeed.webgmex`
+1. I created the folder `seeds` within the `src` folder and placed the exported webgmex file in that folder with the name `PetriNetSeed.webgmex`
 2. In order to include that new folder in the "seed search", if you will, I added
 
 ```
@@ -46,7 +51,7 @@ config.seedProjects.basePaths.push('src/seeds')
 to the [config.webgme.js](petri-net/config/config.webgme.js) file.
 
 3. I restarted the server.
-4. I then made sure it worked by creating a new project and choosing the `PetriNetProjectSeed` option from the seed choices.
+4. I then made sure it worked by creating a new project and choosing the `PetriNetSeed` option from the seed choices.
 
 ## Development Environment Setup
 
@@ -86,7 +91,7 @@ It is recommended to run 'npm init' from the within project to finish configurat
 5. Ran `npm init` from within the new `petri-net` folder as indicated above. Used mostly default values, except for GitHub repository, keywords, and author.
 6. Started project with `webgme start` from within `petri-net` folder.
 
-### Decoration
+## Decorations
 
 I didn't create my own custom decorator, and instead just used the SVG Decoration following [this tutorial on YouTube on Dynamic SVG Rendering in WebGME with EJS](https://www.youtube.com/watch?time_continue=1&v=l5m4CF4w8fE&feature=emb_logo).
 
@@ -106,13 +111,13 @@ This initial marking description took a bit of logic to build out using [EJS](ht
 
 Next step: simulating behavior! Requirements of the simulator:
 
-- Should visualize the network similarly to the composition
-- Additionally, it should differentiate the transitions that are enabled
-- Firing should happen once the user clicks on an enabled transition
-- Markings should progress according to firings (no animation is required, but would be nice)
-- The visualizer should have a ‘reset’ button on its toolbar that switches the network back to the initial marking
-- The state of the simulation should not be reflected in the model
-- If your network reaches a deadlock (there is no enabled transition), some visual effect should notify the user (or an actual notification...)
+- Should visualize the network similarly to the composition: SATISFIED
+- Additionally, it should differentiate the transitions that are enabled: SATISFIED, achieved with coloring and CSS-keyframe-animations for pulsating effect on enabled transitions
+- Firing should happen once the user clicks on an enabled transition: SATISFIED, with additional option of "firing all enabled transitions simultaneously"
+- Markings should progress according to firings (no animation is required, but would be nice): SATISFIED
+- The visualizer should have a ‘reset’ button on its toolbar that switches the network back to the initial marking: SATISFIED
+- The state of the simulation should not be reflected in the model: SATISFIED, only the .joint (the visualization) is changed
+- If your network reaches a deadlock (there is no enabled transition), some visual effect should notify the user (or an actual notification...): SATISFIED
 
 To do this, as documented [here](https://github.com/webgme/webgme/wiki/GME-Visualizers), I decided to use the `webgme new viz` command using the webgme CLI tool. When checking options with the `--help` flag, I got this response:
 
@@ -197,3 +202,16 @@ I then added the following line to [config.webgme.js](petri-net/config/config.we
 ```
 config.plugin.basePaths.push(__dirname + "/../src/plugins");
 ```
+
+I chose JS instead of Python because I've become quite a fan of the syntactic sugar offered by JS and the simplicity that it offers especially when it comes to traversing data structures.
+
+The plugin source code is in [petri-net/src/plugins/PetriNetClassifier/PetriNetClassifier.js](petri-net/src/plugins/PetriNetClassifier/PetriNetClassifier.js). It primarily handles classification of a given Petri Net into one of the aforementioned classes; each positive classification triggers a notification that appears in the `NOTIFICATIONS` bar on the bottom right. The plugin can be triggered by opening the `SimViz` visualizer for any given Petri Net model instance and clicking the `Classify!` button in the top left in the toolbar. A screenshot is shown below of this using the Krebs Cycle model instance as an example.
+![classifier plugin button](img/classifier.png)
+
+## Logical Issue
+
+After some extensive testing and building out various examples, particularly the more complex real-world examples, I noticed an issue associated with the **simultaneous firing** option that I implemented. This feature causes problems in situations where a Place has at least one token but fewer tokens than outTransitions. If this is true, each of the outTransitions is enabled because the Place has at least one token, but if you choose to "Fire all transitions simultaneously" then each of those outTransitions will try to decrement the token count of the Place by one, resulting in a negative token value at that place. Obviously, this situation really should not arise, and it would not arise if I removed the ability to simultaneously fire transitions. This is because if you were to fire only one transition at a time, then the Place's token value would update one at a time and would never drop below zero. An alternative fix to this would be to still allow "firing all enabled transitions" but randomly interleaving the firing of those transitions such that really only one fires at a time, then the "enabled" status updates for all, then the next fires, etcetera. In short, with simultaneous firing, multiple "competing" transitions can falsely assume that there are sufficient tokens at a shared inplace and can produce problems with the token value decrementing.
+
+## NodeJS Version Issue
+
+I ran into a strange problem with NodeJS v18.0.0. Running WebGME with v18 works almost perfectly unless you want to export a project (create a new seed from a webgmex file). On my iMac 2012 (macOS Catalina), I had to fall back to NodeJS v14 and reinstall NPM packages in order for the export feature to work properly. When doing this, I also had to use `npm start` instead of `webgme start` in order to start the server to produce the export.

@@ -113,11 +113,7 @@ The below is an image pulled from the work of [Oyelade et. al](https://ieeexplor
 
 #### Example: Glycolysis & Krebs/Citric Acid Cycle Model
 
-
-
 https://user-images.githubusercontent.com/31296526/184284012-8cebf8f0-a308-428a-b066-a78bb9c47e1e.mp4
-
-
 
 In this example I have illustrated (quite abstractly) how a Petri Net can be used to model the Krebs or citric acid cycle, which is a series of reactions that takes in acetyl CoA and produces carbon dioxide, NADH, FADH2, and ATP or GTP. I put this together by referencing [this Khan Academy video on the Krebs cycle](https://www.khanacademy.org/science/biology/cellular-respiration-and-fermentation/pyruvate-oxidation-and-the-citric-acid-cycle/v/krebs-citric-acid-cycle).
 
@@ -127,6 +123,9 @@ Note that I did give an initial token value of 1 to both oxaloacetic acids, othe
 
 Also note that I arbitrarily initialized 5 glucose molecules which allows for 5 executions of the full krebs cycle before reaching a deadlock, because the acetyl CoA that comes from the glucose source is, again, one of the two requirements for the beginning of the krebs cycle.
 
+## Installation
+
+Below I will provide instructions for installing this design studio in your local development environment. Note that I used **macOS Catalina 10.15.7** with **NodeJS v18.0.0** to develop the design studio.
 You finally have to create documentation to your design studio. It can be as simple as a readme.md file in the repository, but it has to clarify the following things for the user:
 ● What is the domain about
 ● A few sentence on the typical use-cases of the domain
