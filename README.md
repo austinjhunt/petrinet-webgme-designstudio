@@ -113,6 +113,12 @@ The below is an image pulled from the work of [Oyelade et. al](https://ieeexplor
 
 #### Example: Glycolysis & Krebs/Citric Acid Cycle Model
 
+
+
+https://user-images.githubusercontent.com/31296526/184284012-8cebf8f0-a308-428a-b066-a78bb9c47e1e.mp4
+
+
+
 In this example I have illustrated (quite abstractly) how a Petri Net can be used to model the Krebs or citric acid cycle, which is a series of reactions that takes in acetyl CoA and produces carbon dioxide, NADH, FADH2, and ATP or GTP. I put this together by referencing [this Khan Academy video on the Krebs cycle](https://www.khanacademy.org/science/biology/cellular-respiration-and-fermentation/pyruvate-oxidation-and-the-citric-acid-cycle/v/krebs-citric-acid-cycle).
 
 In this case, I've used transitions to represent reactions like pyruvate oxidation of the two pyruvic acids produced by glycolysis, the merging of acetyl CoA with oxaloacetic acid, and the oxidation of citric acid. I've used places to represent molecules, in a way that allows me to represent the necessity of a molecule for the occurrence of a chemical reaction. For example, both acetyl CoA and oxaloacetic acid are necessary molecules / reactants for the beginning of the krebs / citric acid cycle because it requires their merging. The petri net allows me to model that since transitions require all inplaces of a given transition (reaction) to have at least one token (i.e. be present and ready to react) in order to fire (react/take place).
