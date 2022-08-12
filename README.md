@@ -95,6 +95,8 @@ From [Investopedia](https://www.investopedia.com/terms/s/scm.asp), supply chain 
 
 #### Example: Supply Chain Management Model (found in the Real World Examples Petri Net container)
 
+https://user-images.githubusercontent.com/31296526/184283359-b46879f6-0283-439b-b595-c9c829164263.mp4
+
 The above example (included in the main project seed) demonstrates how one might model the flow of material (regardless of what that material is) through a supply chain network using a Petri Net, and moreover the recycling of that material as it moves through manufacturing, distribution, point of sale systems to customers, to recycling centers and back to manufacturers again. With such a model you can identify choke points at which material may stop flowing and make decisions regarding transports.
 
 With a supply chain network, we know that material must be sourced from a material source (or multiple in this example), whether foreign or domestic. The material MUST exist in order for the material to be transported to the port. Material must be at the port in order for it to then be transported to manufacturing locations, and so on through the distribution center, the individual retail stores, the customer base(s) for each of those stores and the recycling centers.
@@ -109,9 +111,7 @@ The below is an image pulled from the work of [Oyelade et. al](https://ieeexplor
 
 ![glycolysis in falciparum parasite](img/malaria-glycolysis.png)
 
-#### Example: Glycolysis & Krebs Cycle Model
-
-### Krebs / Citric Acid Cycle
+#### Example: Glycolysis & Krebs/Citric Acid Cycle Model
 
 In this example I have illustrated (quite abstractly) how a Petri Net can be used to model the Krebs or citric acid cycle, which is a series of reactions that takes in acetyl CoA and produces carbon dioxide, NADH, FADH2, and ATP or GTP. I put this together by referencing [this Khan Academy video on the Krebs cycle](https://www.khanacademy.org/science/biology/cellular-respiration-and-fermentation/pyruvate-oxidation-and-the-citric-acid-cycle/v/krebs-citric-acid-cycle).
 
